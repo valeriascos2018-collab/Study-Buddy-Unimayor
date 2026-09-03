@@ -1,1 +1,1 @@
-# Studdy-Buddy-Unimayor
+# Study-Buddy-Unimayor
