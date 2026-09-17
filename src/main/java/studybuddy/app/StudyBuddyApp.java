@@ -1,6 +1,6 @@
-package co.edu.unimayor.studybuddy;
+package studybuddy.app;
 
-import co.edu.unimayor.studybuddy.gui.FrmLogin;
+import studybuddy.gui.FrmLogin;
 import javax.swing.*;
 
 /**

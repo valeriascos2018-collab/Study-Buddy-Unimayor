@@ -1,10 +1,10 @@
-package co.edu.unimayor.studybuddy.controller;
+package studybuddy.controller;
 
-import co.edu.unimayor.studybuddy.gui.FrmLogin;
-import co.edu.unimayor.studybuddy.gui.FrmRegistro;
-import co.edu.unimayor.studybuddy.gui.FrmPerfil;
-import co.edu.unimayor.studybuddy.logic.AutenticacionService;
-import co.edu.unimayor.studybuddy.model.Usuario;
+import studybuddy.gui.FrmLogin;
+import studybuddy.gui.FrmRegistro;
+import studybuddy.gui.FrmPerfil;
+import studybuddy.logic.AutenticacionService;
+import studybuddy.model.Usuario;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

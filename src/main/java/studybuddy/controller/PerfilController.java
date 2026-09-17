@@ -1,8 +1,8 @@
-package co.edu.unimayor.studybuddy.controller;
+package studybuddy.controller;
 
-import co.edu.unimayor.studybuddy.gui.FrmPerfil;
-import co.edu.unimayor.studybuddy.logic.PerfilService;
-import co.edu.unimayor.studybuddy.model.Usuario;
+import studybuddy.gui.FrmPerfil;
+import studybuddy.logic.PerfilService;
+import studybuddy.model.Usuario;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -77,6 +77,6 @@ public class PerfilController implements ActionListener {
     private void salir() {
         vista.dispose();
         // Aquí se podría volver al login o cerrar la aplicación
-        new co.edu.unimayor.studybuddy.gui.FrmLogin().setVisible(true);
+        new studybuddy.gui.FrmLogin().setVisible(true);
     }
 }

@@ -1,6 +1,6 @@
-package co.edu.unimayor.studybuddy.dao;
+package studybuddy.dao;
 
-import co.edu.unimayor.studybuddy.model.Usuario;
+import studybuddy.model.Usuario;
 import java.sql.SQLException;
 
 /**

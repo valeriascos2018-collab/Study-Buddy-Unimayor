@@ -1,9 +1,9 @@
-package co.edu.unimayor.studybuddy.dao.impl;
+package studybuddy.dao.impl;
 
-import co.edu.unimayor.studybuddy.config.ConexionBD;
-import co.edu.unimayor.studybuddy.dao.UsuarioDAO;
-import co.edu.unimayor.studybuddy.model.Rol;
-import co.edu.unimayor.studybuddy.model.Usuario;
+import studybuddy.config.ConexionBD;
+import studybuddy.dao.UsuarioDAO;
+import studybuddy.model.Rol;
+import studybuddy.model.Usuario;
 
 import java.sql.*;
 

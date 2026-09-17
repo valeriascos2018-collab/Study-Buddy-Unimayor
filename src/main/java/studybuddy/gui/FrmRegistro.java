@@ -1,7 +1,7 @@
-package co.edu.unimayor.studybuddy.gui;
+package studybuddy.gui;
 
-import co.edu.unimayor.studybuddy.controller.RegistroController;
-import co.edu.unimayor.studybuddy.model.Rol;
+import studybuddy.controller.RegistroController;
+import studybuddy.model.Rol;
 import javax.swing.*;
 import java.awt.*;
 

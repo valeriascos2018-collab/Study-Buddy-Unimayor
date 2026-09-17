@@ -1,4 +1,4 @@
-package co.edu.unimayor.studybuddy.model;
+package studybuddy.model;
 
 /**
  * Enum que define los roles posibles en el sistema.

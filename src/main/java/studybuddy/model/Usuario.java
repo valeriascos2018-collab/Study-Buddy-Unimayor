@@ -1,4 +1,4 @@
-package co.edu.unimayor.studybuddy.model;
+package studybuddy.model;
 
 import java.time.LocalDateTime;
 

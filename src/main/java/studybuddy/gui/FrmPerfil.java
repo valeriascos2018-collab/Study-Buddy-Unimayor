@@ -1,7 +1,7 @@
-package co.edu.unimayor.studybuddy.gui;
+package studybuddy.gui;
 
-import co.edu.unimayor.studybuddy.controller.PerfilController;
-import co.edu.unimayor.studybuddy.model.Usuario;
+import studybuddy.controller.PerfilController;
+import studybuddy.model.Usuario;
 import javax.swing.*;
 import java.awt.*;
 

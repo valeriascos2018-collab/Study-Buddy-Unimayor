@@ -1,6 +1,6 @@
-package co.edu.unimayor.studybuddy.gui;
+package studybuddy.gui;
 
-import co.edu.unimayor.studybuddy.controller.LoginController;
+import studybuddy.controller.LoginController;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
