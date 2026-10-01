@@ -2,6 +2,7 @@ package studybuddy.gui;
 
 import studybuddy.controller.RegistroController;
 import studybuddy.model.Rol;
+import javax.swing.text.AbstractDocument;
 import javax.swing.*;
 import java.awt.*;
 
@@ -59,7 +60,7 @@ public class FrmRegistro extends JFrame {
         gbc.gridx = 0; gbc.gridy = 0;
         panelFormulario.add(new JLabel("Nombre Completo:"), gbc);
         gbc.gridx = 1; gbc.gridy = 0; gbc.weightx = 1.0;
-        txtNombre = new JTextField(25);
+        txtNombre = crearTextFieldSoloLetras(25);
         panelFormulario.add(txtNombre, gbc);
         
         // Correo
@@ -95,7 +96,7 @@ public class FrmRegistro extends JFrame {
         gbc.gridx = 0; gbc.gridy = 5; gbc.weightx = 0.0;
         panelFormulario.add(new JLabel("Programa Académico:"), gbc);
         gbc.gridx = 1; gbc.gridy = 5; gbc.weightx = 1.0;
-        txtPrograma = new JTextField(25);
+        txtPrograma = crearTextFieldSoloLetras(25);
         panelFormulario.add(txtPrograma, gbc);
         
         // Rol
@@ -123,6 +124,17 @@ public class FrmRegistro extends JFrame {
         panelPrincipal.add(panelBotones, BorderLayout.SOUTH);
         
         add(panelPrincipal);
+    }
+    
+    /**
+     * Crea un JTextField que solo acepta letras y espacios.
+     * @param columns Número de columnas del campo de texto
+     * @return JTextField con filtro de solo letras
+     */
+    private JTextField crearTextFieldSoloLetras(int columns) {
+        JTextField textField = new JTextField(columns);
+        ((AbstractDocument) textField.getDocument()).setDocumentFilter(new SoloLetrasFilter());
+        return textField;
     }
     
     /**
