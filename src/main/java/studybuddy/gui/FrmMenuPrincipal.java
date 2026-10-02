@@ -8,66 +8,143 @@ package studybuddy.gui;
  *
  * @author yoban
  */
+
 import studybuddy.controller.CatalogoTutoriasController;
 import studybuddy.controller.MisSesionesController;
 import studybuddy.controller.PublicarSesionController;
 import studybuddy.model.Rol;
 import studybuddy.model.Usuario;
 
-import java.awt.GridLayout;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
-import javax.swing.border.EmptyBorder;
+import javax.swing.*;
+import java.awt.*;
 
 public class FrmMenuPrincipal extends JFrame {
+
+    // Colores institucionales
+    private static final Color COLOR_PRIMARIO = new Color(0, 102, 204);
+    private static final Color COLOR_FONDO = new Color(245, 245, 245);
 
     public FrmMenuPrincipal(Usuario usuario) {
         setTitle("StudyBuddy - Menú principal");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLayout(new GridLayout(0, 1, 10, 10));
-        ((javax.swing.JComponent) getContentPane()).setBorder(new EmptyBorder(20, 30, 20, 30));
+        setSize(500, 500);
+        setLocationRelativeTo(null);
+        setResizable(false);
 
-        add(new JLabel("Hola, " + usuario.getNombreCompleto(), SwingConstants.CENTER));
+        // Panel principal con fondo gris claro
+        JPanel panelPrincipal = new JPanel();
+        panelPrincipal.setLayout(new BorderLayout());
+        panelPrincipal.setBackground(COLOR_FONDO);
 
-        JButton btnCatalogo = new JButton("Ver catálogo de tutorías");
+        // ===== HEADER =====
+        JPanel panelHeader = new JPanel();
+        panelHeader.setBackground(COLOR_PRIMARIO);
+        panelHeader.setPreferredSize(new Dimension(0, 130));
+        panelHeader.setLayout(new BoxLayout(panelHeader, BoxLayout.Y_AXIS));
+        panelHeader.add(Box.createVerticalStrut(25));
+
+        JLabel lblTitulo = new JLabel("StudyBuddy Unimayor");
+        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        lblTitulo.setForeground(Color.WHITE);
+        lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panelHeader.add(lblTitulo);
+
+        panelHeader.add(Box.createVerticalStrut(10));
+
+        JLabel lblSaludo = new JLabel("¡Hola, " + usuario.getNombreCompleto() + "!");
+        lblSaludo.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        lblSaludo.setForeground(new Color(220, 230, 240));
+        lblSaludo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panelHeader.add(lblSaludo);
+
+        panelHeader.add(Box.createVerticalStrut(25));
+        panelPrincipal.add(panelHeader, BorderLayout.NORTH);
+
+        // ===== PANEL DE BOTONES =====
+        JPanel panelContenido = new JPanel();
+        panelContenido.setLayout(new BoxLayout(panelContenido, BoxLayout.Y_AXIS));
+        panelContenido.setBackground(Color.WHITE);
+        panelContenido.setBorder(BorderFactory.createEmptyBorder(30, 40, 30, 40));
+
+        panelContenido.add(Box.createVerticalStrut(10));
+
+        // --- Botón: Catálogo de tutorías ---
+        JButton btnCatalogo = crearBotonMenu("📚 Ver catálogo de tutorías", COLOR_PRIMARIO);
         btnCatalogo.addActionListener(e -> {
             FrmCatalogoTutorias v = new FrmCatalogoTutorias();
             new CatalogoTutoriasController(v, usuario);
             v.setVisible(true);
             dispose();
         });
-        add(btnCatalogo);
+        btnCatalogo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panelContenido.add(btnCatalogo);
+        panelContenido.add(Box.createVerticalStrut(15));
 
+        // --- Botones exclusivos para Tutor/Monitor ---
         if (usuario.getRol() == Rol.TUTOR_MONITOR) {
-            JButton btnPublicar = new JButton("Publicar sesión");
+            JButton btnPublicar = crearBotonMenu("➕ Publicar sesión", new Color(40, 167, 69));
             btnPublicar.addActionListener(e -> {
                 FrmPublicarSesion v = new FrmPublicarSesion();
                 new PublicarSesionController(v, usuario.getId());
                 v.setVisible(true);
                 dispose();
             });
-            add(btnPublicar);
+            btnPublicar.setAlignmentX(Component.CENTER_ALIGNMENT);
+            panelContenido.add(btnPublicar);
+            panelContenido.add(Box.createVerticalStrut(15));
 
-            JButton btnMisSesiones = new JButton("Mis sesiones");
+            JButton btnMisSesiones = crearBotonMenu("📋 Mis sesiones", new Color(255, 165, 0));
             btnMisSesiones.addActionListener(e -> {
                 FrmMisSesiones v = new FrmMisSesiones();
                 new MisSesionesController(v, usuario);
                 v.setVisible(true);
                 dispose();
             });
-            add(btnMisSesiones);
+            btnMisSesiones.setAlignmentX(Component.CENTER_ALIGNMENT);
+            panelContenido.add(btnMisSesiones);
+            panelContenido.add(Box.createVerticalStrut(15));
         }
 
-        JButton btnPerfil = new JButton("Mi perfil");
+        // --- Botón: Mi perfil ---
+        JButton btnPerfil = crearBotonMenu("👤 Mi perfil", new Color(108, 117, 125));
         btnPerfil.addActionListener(e -> {
             new FrmPerfil(usuario).setVisible(true);
             dispose();
         });
-        add(btnPerfil);
+        btnPerfil.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panelContenido.add(btnPerfil);
 
-        pack();
-        setLocationRelativeTo(null);
+        panelContenido.add(Box.createVerticalStrut(20));
+        panelPrincipal.add(panelContenido, BorderLayout.CENTER);
+
+        add(panelPrincipal);
+    }
+
+    /**
+     * Crea un botón estilizado para el menú.
+     * Mantiene exactamente la misma funcionalidad del botón original.
+     */
+    private JButton crearBotonMenu(String texto, Color colorFondo) {
+        JButton boton = new JButton(texto);
+        boton.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        boton.setBackground(colorFondo);
+        boton.setForeground(Color.WHITE);
+        boton.setFocusPainted(false);
+        boton.setBorderPainted(false);
+        boton.setPreferredSize(new Dimension(380, 50));
+        boton.setMaximumSize(new Dimension(380, 50));
+        boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        // Efecto hover
+        boton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                boton.setBackground(colorFondo.darker());
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                boton.setBackground(colorFondo);
+            }
+        });
+
+        return boton;
     }
 }
