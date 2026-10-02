@@ -10,6 +10,7 @@ import studybuddy.config.ConexionBD;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.sql.Connection;
 
 public class SesionDAOImpl implements SesionDAO {
     
@@ -19,7 +20,7 @@ public class SesionDAOImpl implements SesionDAO {
                      "tipo_sesion, modalidad, fecha, hora_inicio, hora_fin, sede, estado, tutor_id) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
-        try (Connection conn = ConexionBD.getConnection();
+        try (Connection conn = ConexionBD.getInstancia().getConexion();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
             ps.setString(1, sesion.getAsignatura());
@@ -58,7 +59,7 @@ public class SesionDAOImpl implements SesionDAO {
                      "tipo_sesion=?, modalidad=?, fecha=?, hora_inicio=?, hora_fin=?, " +
                      "sede=?, estado=? WHERE id=?";
         
-        try (Connection conn = ConexionBD.getConnection();
+        try (Connection conn = ConexionBD.getInstancia().getConexion();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setString(1, sesion.getAsignatura());
@@ -85,7 +86,7 @@ public class SesionDAOImpl implements SesionDAO {
     public boolean cancelarSesion(int id) {
         String sql = "UPDATE sesiones SET estado='CANCELADA' WHERE id=?";
         
-        try (Connection conn = ConexionBD.getConnection();
+        try (Connection conn = ConexionBD.getInstancia().getConexion();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, id);
@@ -102,7 +103,7 @@ public class SesionDAOImpl implements SesionDAO {
         String sql = "SELECT s.*, u.nombre as tutor_nombre FROM sesiones s " +
                      "JOIN usuarios u ON s.tutor_id = u.id WHERE s.id=?";
         
-        try (Connection conn = ConexionBD.getConnection();
+        try (Connection conn = ConexionBD.getInstancia().getConexion();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, id);
@@ -124,7 +125,7 @@ public class SesionDAOImpl implements SesionDAO {
         List<Sesion> sesiones = new ArrayList<>();
         String sql = "SELECT * FROM sesiones WHERE tutor_id=? ORDER BY fecha, hora_inicio";
         
-        try (Connection conn = ConexionBD.getConnection();
+        try (Connection conn = ConexionBD.getInstancia().getConexion();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, tutorId);
@@ -149,7 +150,7 @@ public class SesionDAOImpl implements SesionDAO {
                      "WHERE s.estado='PROGRAMADA' AND s.cupos_disponibles > 0 " +
                      "ORDER BY s.fecha, s.hora_inicio";
         
-        try (Connection conn = ConexionBD.getConnection();
+        try (Connection conn = ConexionBD.getInstancia().getConexion();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             
@@ -184,7 +185,7 @@ public class SesionDAOImpl implements SesionDAO {
         }
         sql.append(" ORDER BY s.fecha, s.hora_inicio");
         
-        try (Connection conn = ConexionBD.getConnection();
+        try (Connection conn = ConexionBD.getInstancia().getConexion();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             
             int paramIndex = 1;
@@ -217,7 +218,7 @@ public class SesionDAOImpl implements SesionDAO {
                      "((hora_inicio <= ? AND hora_fin >= ?) OR " +
                      "(hora_inicio <= ? AND hora_fin >= ?))";
         
-        try (Connection conn = ConexionBD.getConnection();
+        try (Connection conn = ConexionBD.getInstancia().getConexion();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, tutorId);
