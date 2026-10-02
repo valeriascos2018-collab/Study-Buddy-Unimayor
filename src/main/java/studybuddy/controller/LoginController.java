@@ -5,7 +5,7 @@ import studybuddy.gui.FrmRegistro;
 import studybuddy.gui.FrmPerfil;
 import studybuddy.logic.AutenticacionService;
 import studybuddy.model.Usuario;
-
+import studybuddy.gui.FrmMenuPrincipal;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JOptionPane;
@@ -67,11 +67,11 @@ public class LoginController implements ActionListener {
         switch (usuario.getRol()) {
             case ESTUDIANTE:
             case TUTOR_MONITOR:
-                new FrmPerfil(usuario).setVisible(true);
+                new FrmMenuPrincipal(usuario).setVisible(true);
                 break;
             case ADMINISTRADOR:
                 // Aquí iría la vista de administrador (fuera del Sprint 1)
-                JOptionPane.showMessageDialog(null, "Vista de Administrador en desarrollo");
+                new FrmMenuPrincipal(usuario).setVisible(true);
                 break;
             default:
                 JOptionPane.showMessageDialog(null, "Rol no reconocido");

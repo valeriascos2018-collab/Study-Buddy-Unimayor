@@ -136,4 +136,11 @@ public class SesionService {
                "Casa Obando".equals(sede) || 
                "Encarnación".equals(sede);
     }
+    public Sesion obtenerSesionPorId(int id) {
+    return sesionDAO.obtenerSesionPorId(id);
+    }
+
+public List<Sesion> obtenerTodasLasSesionesDisponibles() {
+    return sesionDAO.obtenerTodasLasSesionesDisponibles();
+    }
 }

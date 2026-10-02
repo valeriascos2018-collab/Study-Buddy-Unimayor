@@ -5,7 +5,7 @@ import studybuddy.gui.FrmEditarSesion;
 import studybuddy.logic.SesionService;
 import studybuddy.model.Sesion;
 import studybuddy.model.Usuario;
-
+import studybuddy.gui.FrmMenuPrincipal;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.LocalDate;
@@ -174,6 +174,7 @@ public class MisSesionesController implements ActionListener {
      */
     private void volverAlMenu() {
         vista.dispose();
+        new FrmMenuPrincipal(tutor).setVisible(true);
         // new FrmMenuTutor(tutor).setVisible(true);
     }
 }

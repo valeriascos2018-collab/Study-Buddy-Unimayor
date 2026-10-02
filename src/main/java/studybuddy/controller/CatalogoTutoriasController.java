@@ -5,7 +5,7 @@ import studybuddy.logic.SesionService;
 import studybuddy.logic.ReservaService;
 import studybuddy.model.Sesion;
 import studybuddy.model.Usuario;
-
+import studybuddy.gui.FrmMenuPrincipal;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
@@ -185,6 +185,7 @@ public class CatalogoTutoriasController implements ActionListener {
      */
     private void volverAlMenu() {
         vista.dispose();
+        new FrmMenuPrincipal(estudiante).setVisible(true);
         // new FrmMenuEstudiante(estudiante).setVisible(true);
     }
 }

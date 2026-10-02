@@ -8,6 +8,8 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import javax.swing.JOptionPane;
 import java.util.Date;
+
+
 public class PublicarSesionController implements ActionListener {
     
     private final FrmPublicarSesion vista;
@@ -96,14 +98,14 @@ public class PublicarSesionController implements ActionListener {
         // Llamar al service
         String error = service.publicarSesion(
             asignatura, tema, cupoMaximo, tipoSesion, modalidad,
-            fecha, horaInicio, horaFin, sede, tutor.getId()
+            fecha, horaInicio, horaFin, sede, tutorId 
         );
         
         if (error == null) {
             JOptionPane.showMessageDialog(vista, 
                 "Sesión publicada exitosamente", 
                 "Éxito", JOptionPane.INFORMATION_MESSAGE);
-            volverAlMenu();
+            volver();
         } else {
             JOptionPane.showMessageDialog(vista, 
                 error, 
