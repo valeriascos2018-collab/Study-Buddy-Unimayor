@@ -10,7 +10,7 @@ import java.sql.SQLException;
  * Servicio de lógica de negocio para autenticación.
  * Valida dominio institucional, campos vacíos y credenciales.
  */
-public class AutenticacionService {
+public class AutenticacionService implements IAutenticacionService{
     
     private static final String DOMINIO_INSTITUCIONAL = "@unimayor.edu.co";
     private final UsuarioDAO usuarioDAO;

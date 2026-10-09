@@ -2,7 +2,7 @@ package studybuddy.app;
 
 import studybuddy.gui.FrmLogin;
 import javax.swing.*;
-
+import studybuddy.factory.AppFactory;
 /**
  * Clase principal de la aplicación.
  * Punto de entrada que lanza la ventana de Login.
@@ -10,16 +10,9 @@ import javax.swing.*;
 public class StudyBuddyApp {
     
     public static void main(String[] args) {
-        // Configurar look and feel del sistema
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        // Lanzar aplicación en el hilo de eventos de Swing
+        // Ejecutar en el hilo de despacho de eventos de Swing (buena práctica)
         SwingUtilities.invokeLater(() -> {
-            new FrmLogin().setVisible(true);
+            AppFactory.iniciarLogin();
         });
     }
 }
