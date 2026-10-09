@@ -4,6 +4,7 @@ import studybuddy.controller.RegistroController;
 import studybuddy.model.Rol;
 import javax.swing.text.AbstractDocument;
 import javax.swing.*;
+import studybuddy.controller.ControllerFactory;
 import java.awt.*;
 
 /**
@@ -141,6 +142,6 @@ public class FrmRegistro extends JFrame {
      * Inicializa el controller para manejar eventos.
      */
     private void initController() {
-        new RegistroController(this);
+        ControllerFactory.crearRegistroController(this);
     }
 }

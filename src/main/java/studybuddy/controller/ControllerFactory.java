@@ -4,10 +4,14 @@
  */
 package studybuddy.controller;
 
-/**
- *
- * @author yoban
- */
+import studybuddy.gui.FrmLogin;
+import studybuddy.gui.FrmRegistro;
+import studybuddy.gui.FrmPerfil;
+import studybuddy.logic.IAutenticacionService;
+import studybuddy.logic.AutenticacionService;
+import studybuddy.logic.PerfilService;
+import studybuddy.model.Usuario;
+
 public class ControllerFactory {
     
     public static LoginController crearLoginController(FrmLogin vista) {
@@ -20,8 +24,8 @@ public class ControllerFactory {
         return new RegistroController(vista, servicio);
     }
     
-    public static PerfilController crearPerfilController(FrmPerfil vista) {
+    public static PerfilController crearPerfilController(FrmPerfil vista, Usuario usuario) {
         PerfilService servicio = new PerfilService();
-        return new PerfilController(vista, servicio);
+        return new PerfilController(vista, usuario, servicio);
     }
 }

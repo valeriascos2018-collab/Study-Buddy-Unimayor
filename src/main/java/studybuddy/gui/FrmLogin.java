@@ -5,6 +5,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import studybuddy.controller.ControllerFactory;
 
 /**
  * Ventana de Inicio de Sesión (Login).
@@ -186,6 +187,6 @@ public class FrmLogin extends JFrame {
     }
     
     private void initController() {
-        new LoginController(this);
+        ControllerFactory.crearLoginController(this);
     }
 }

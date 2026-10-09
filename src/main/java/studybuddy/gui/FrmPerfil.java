@@ -2,6 +2,7 @@ package studybuddy.gui;
 
 import studybuddy.controller.PerfilController;
 import studybuddy.model.Usuario;
+import studybuddy.controller.ControllerFactory;
 import javax.swing.text.AbstractDocument;
 import javax.swing.*;
 import java.awt.*;
@@ -125,6 +126,6 @@ public class FrmPerfil extends JFrame {
      * Inicializa el controller para manejar eventos.
      */
     private void initController(Usuario usuario) {
-        new PerfilController(this, usuario);
+        ControllerFactory.crearPerfilController(this, usuario);
     }
 }

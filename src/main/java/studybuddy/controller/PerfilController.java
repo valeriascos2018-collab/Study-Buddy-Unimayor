@@ -18,9 +18,9 @@ public class PerfilController implements ActionListener {
     private final PerfilService servicio;
     private Usuario usuarioActual;
     
-    public PerfilController(FrmPerfil vista, Usuario usuario) {
+    public PerfilController(FrmPerfil vista, Usuario usuario, PerfilService servicio) {
         this.vista = vista;
-        this.servicio = new PerfilService();
+        this.servicio = servicio;
         this.usuarioActual = usuario;
         
         this.vista.btnGuardar.addActionListener(this);
@@ -57,7 +57,6 @@ public class PerfilController implements ActionListener {
      * Actualiza el perfil del usuario con los datos de la vista.
      */
     private void actualizarPerfil() {
-        // Actualizar objeto con datos de la vista
         usuarioActual.setNombreCompleto(vista.txtNombre.getText().trim());
         usuarioActual.setFacultad(vista.txtFacultad.getText().trim());
         usuarioActual.setProgramaAcademico(vista.txtPrograma.getText().trim());
@@ -76,7 +75,6 @@ public class PerfilController implements ActionListener {
      */
     private void salir() {
         vista.dispose();
-        // Aquí se podría volver al login o cerrar la aplicación
         new studybuddy.gui.FrmLogin().setVisible(true);
     }
 }

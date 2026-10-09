@@ -5,7 +5,7 @@ import studybuddy.gui.FrmLogin;
 import studybuddy.logic.AutenticacionService;
 import studybuddy.model.Rol;
 import studybuddy.model.Usuario;
-
+import studybuddy.logic.IAutenticacionService;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JOptionPane;
@@ -19,7 +19,7 @@ public class RegistroController implements ActionListener {
     private final FrmRegistro vista;
     private final AutenticacionService servicio;
     
-    public RegistroController(FrmRegistro vista) {
+    public RegistroController(FrmRegistro vista, IAutenticacionService servicio) {
         this.vista = vista;
         this.servicio = new AutenticacionService();
         this.vista.btnRegistrar.addActionListener(this);
