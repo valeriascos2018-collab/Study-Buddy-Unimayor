@@ -38,4 +38,7 @@ public interface UsuarioDAO {
      * @throws SQLException Si ocurre error en la BD
      */
     boolean existeCorreo(String correo) throws SQLException;
+    
+    
+    Usuario autenticar(String correo, String contraseña) throws SQLException;
 }

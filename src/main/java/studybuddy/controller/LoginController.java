@@ -1,89 +1,94 @@
 package studybuddy.controller;
 
 import studybuddy.gui.FrmLogin;
-import studybuddy.gui.FrmRegistro;
-import studybuddy.gui.FrmMenuPrincipal;
-import studybuddy.logic.IAutenticacionService; // ✅ 1. Importar la INTERFAZ, no la clase concreta
+import studybuddy.logic.IAutenticacionService;
 import studybuddy.model.Usuario;
+import javax.swing.JOptionPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.JOptionPane;
 
-/**
- * Controlador para la ventana de Login.
- * Maneja eventos de autenticación y navegación a otras vistas.
- */
-public class LoginController implements ActionListener {
-
+public class LoginController {
+    
     private final FrmLogin vista;
-    private final IAutenticacionService servicio; // ✅ 2. Depende de la abstracción
-
-    // ✅ 3. El constructor AHORA RECIBE el servicio como parámetro
+    private final IAutenticacionService servicio;
+    
+    // ✅ Constructor que coincide con tu ControllerFactory
     public LoginController(FrmLogin vista, IAutenticacionService servicio) {
         this.vista = vista;
-        this.servicio = servicio; // Se asigna la dependencia inyectada (ya no se usa "new")
+        this.servicio = servicio;
         
-        // Registro de listeners
-        this.vista.btnLogin.addActionListener(this);
-        this.vista.btnRegistro.addActionListener(this);
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == vista.btnLogin) {
-            autenticar();
-        } else if (e.getSource() == vista.btnRegistro) {
-            navegarARegistro();
-        }
-    }
-
-    /**
-     * Procesa la autenticación del usuario.
-     */
-    private void autenticar() {
-        // Se usa txtCorreo (coherente con tu FrmLogin)
-        String correo = vista.txtCorreo.getText().trim();
-        String contraseña = new String(vista.txtPassword.getPassword());
-
-        // Validaciones básicas delegadas al servicio
-        if (!servicio.validarCamposNoVacios(correo, contraseña)) {
-            JOptionPane.showMessageDialog(vista, "Ingrese correo y contraseña", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        Usuario usuario = servicio.autenticar(correo, contraseña);
-
-        if (usuario != null) {
-            JOptionPane.showMessageDialog(vista, "¡Bienvenido " + usuario.getNombreCompleto() + "!", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-            navegarSegunRol(usuario);
-        } else {
-            JOptionPane.showMessageDialog(vista, "Credenciales inválidas", "Error de autenticación", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    /**
-     * Redirige a la vista correspondiente según el rol del usuario.
-     */
-    private void navegarSegunRol(Usuario usuario) {
-        vista.dispose();
+        // ✅ 1. Escuchar el clic del botón de Login
+        this.vista.btnLogin.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                manejarLogin();
+            }
+        });
         
-        switch (usuario.getRol()) {
-            case ESTUDIANTE:
-            case TUTOR_MONITOR:
-            case ADMINISTRADOR:
-                new FrmMenuPrincipal(usuario).setVisible(true);
-                break;
-            default:
-                JOptionPane.showMessageDialog(null, "Rol no reconocido", "Error", JOptionPane.ERROR_MESSAGE);
-                break;
+        // ✅ 2. Escuchar el clic del botón de Registro (para abrir esa ventana)
+        this.vista.btnRegistro.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                abrirRegistro();
+            }
+        });
+    }
+    
+    private void manejarLogin() {
+    // 1. Obtener datos de la vista
+    String correo = vista.txtCorreo.getText().trim();
+    String password = new String(vista.txtPassword.getPassword()).trim();
+    
+    // 2. Validaciones básicas
+    if (correo.isEmpty() || password.isEmpty()) {
+        JOptionPane.showMessageDialog(vista, "Por favor, complete todos los campos.", "Campos vacíos", JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+    
+    if (!servicio.validarDominioInstitucional(correo)) {
+        JOptionPane.showMessageDialog(vista, "El correo debe ser institucional (@unimayor.edu.co).", "Error de dominio", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+    
+    // 3. Intentar autenticar
+    Usuario usuarioAutenticado = servicio.autenticar(correo, password);
+    
+    if (usuarioAutenticado != null) {
+        // ✅ ÉXITO: Mostrar mensaje
+        JOptionPane.showMessageDialog(vista, 
+            "¡Bienvenido, " + usuarioAutenticado.getNombreCompleto() , 
+            "Éxito", 
+            JOptionPane.INFORMATION_MESSAGE);
+        
+        // 🚀 Pasar el usuario autenticado a FrmMenuPrincipal y mostrarlo
+        studybuddy.gui.FrmMenuPrincipal menu = new studybuddy.gui.FrmMenuPrincipal(usuarioAutenticado);
+        menu.setVisible(true);
+        
+        // Cerramos la ventana de login
+        vista.dispose(); 
+        
+    } else {
+        // ❌ FALLO: Credenciales incorrectas
+        JOptionPane.showMessageDialog(vista, "Correo o contraseña incorrectos.", "Error de autenticación", JOptionPane.ERROR_MESSAGE);
+        vista.txtPassword.setText(""); 
+        vista.txtCorreo.requestFocus(); 
         }
     }
-
-    /**
-     * Navega a la ventana de registro.
-     */
-    private void navegarARegistro() {
-        vista.dispose();
-        new FrmRegistro().setVisible(true);
+    private void abrirRegistro() {
+        // Ocultar login
+        vista.setVisible(false);
+        
+        // Crear y mostrar ventana de registro usando el Factory
+        studybuddy.gui.FrmRegistro vistaRegistro = new studybuddy.gui.FrmRegistro();
+        ControllerFactory.crearRegistroController(vistaRegistro);
+        vistaRegistro.setVisible(true);
+        
+        // Opcional: Cuando se cierre el registro, volver a mostrar el login
+        vistaRegistro.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                vista.setVisible(true);
+            }
+        });
     }
 }

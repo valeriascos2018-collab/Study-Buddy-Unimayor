@@ -13,21 +13,21 @@ import java.sql.*;
  */
 public class UsuarioDAOImpl implements UsuarioDAO {
     
-    private final Connection conexion;
-    
-    public UsuarioDAOImpl() {
-        this.conexion = ConexionBD.getInstancia().getConexion();
-    }
-    
+    // ✅ SE ELIMINÓ: private final Connection conexion;
+    // ✅ SE ELIMINÓ: El constructor public UsuarioDAOImpl()
+
     @Override
     public void registrar(Usuario usuario) throws SQLException {
         String sql = "INSERT INTO usuarios (nombre_completo, correo, contraseña, facultad, programa_academico, rol) " +
                      "VALUES (?, ?, ?, ?, ?, ?)";
         
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        // ✅ La conexión se pide y se cierra (se devuelve al pool) automáticamente aquí
+        try (Connection conn = ConexionBD.getConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
             ps.setString(1, usuario.getNombreCompleto());
             ps.setString(2, usuario.getCorreo());
-            ps.setString(3, usuario.getContraseña()); // En producción usar hash
+            ps.setString(3, usuario.getContraseña()); // En producción usar hash (ej. BCrypt)
             ps.setString(4, usuario.getFacultad());
             ps.setString(5, usuario.getProgramaAcademico());
             ps.setString(6, usuario.getRol().name());
@@ -41,7 +41,9 @@ public class UsuarioDAOImpl implements UsuarioDAO {
         String sql = "SELECT id, nombre_completo, correo, contraseña, facultad, programa_academico, rol " +
                      "FROM usuarios WHERE correo = ?";
         
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        try (Connection conn = ConexionBD.getConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
             ps.setString(1, correo);
             
             try (ResultSet rs = ps.executeQuery()) {
@@ -58,7 +60,9 @@ public class UsuarioDAOImpl implements UsuarioDAO {
         String sql = "UPDATE usuarios SET nombre_completo=?, facultad=?, programa_academico=? " +
                      "WHERE id=?";
         
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        try (Connection conn = ConexionBD.getConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
             ps.setString(1, usuario.getNombreCompleto());
             ps.setString(2, usuario.getFacultad());
             ps.setString(3, usuario.getProgramaAcademico());
@@ -72,7 +76,9 @@ public class UsuarioDAOImpl implements UsuarioDAO {
     public boolean existeCorreo(String correo) throws SQLException {
         String sql = "SELECT COUNT(*) FROM usuarios WHERE correo = ?";
         
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+        try (Connection conn = ConexionBD.getConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
             ps.setString(1, correo);
             
             try (ResultSet rs = ps.executeQuery()) {
@@ -97,5 +103,25 @@ public class UsuarioDAOImpl implements UsuarioDAO {
             rs.getString("programa_academico"),
             Rol.valueOf(rs.getString("rol"))
         );
+    }
+    
+    @Override
+    public Usuario autenticar(String correo, String contraseña) throws SQLException {
+        String sql = "SELECT id, nombre_completo, correo, contraseña, facultad, programa_academico, telefono, rol, activo " +
+                 "FROM usuarios WHERE correo = ? AND contraseña = ? AND activo = 1";
+    
+        try (Connection conn = ConexionBD.getConexion();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+        
+            ps.setString(1, correo);
+            ps.setString(2, contraseña);
+        
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return mapearResultSet(rs);
+            }
+        }
+    }
+    return null; // Retorna null si no encuentra coincidencia
     }
 }

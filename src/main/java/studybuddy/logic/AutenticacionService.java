@@ -66,6 +66,7 @@ public class AutenticacionService implements IAutenticacionService{
             Usuario usuario = usuarioDAO.obtenerPorCorreo(correo.trim().toLowerCase());
             if (usuario != null && usuario.getContraseña().equals(procesarContraseña(contraseña))) {
                 return usuario;
+                
             }
         } catch (SQLException e) {
             e.printStackTrace();

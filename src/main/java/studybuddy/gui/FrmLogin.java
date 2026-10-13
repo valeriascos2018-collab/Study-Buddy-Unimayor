@@ -29,6 +29,7 @@ public class FrmLogin extends JFrame {
 
     public FrmLogin() {
         initComponents();
+        initController();
         
     }
     
