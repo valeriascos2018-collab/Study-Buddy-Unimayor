@@ -61,10 +61,9 @@ public class CatalogoTutoriasController implements ActionListener {
         String modalidad = (String) vista.cboFiltroModalidad.getSelectedItem();
         
         // Si seleccionó "Todas", pasar null para no filtrar
-        String asignaturaFiltro = "Todas".equals(asignatura) ? null : asignatura;
-        String sedeFiltro = "Todas".equals(sede) ? null : sede;
-        String modalidadFiltro = "Todas".equals(modalidad) ? null : modalidad;
-        
+        String asignaturaFiltro = (asignatura == null || "Todas".equalsIgnoreCase(asignatura.trim())) ? null : asignatura.trim();
+        String sedeFiltro = (sede == null || "Todas".equalsIgnoreCase(sede.trim())) ? null : sede.trim();
+        String modalidadFiltro = (modalidad == null || "Todas".equalsIgnoreCase(modalidad.trim())) ? null : modalidad.trim();
         List<Sesion> sesiones = sesionService.buscarSesiones(asignaturaFiltro, sedeFiltro, modalidadFiltro);
         
         // Limpiar tabla
@@ -160,7 +159,9 @@ public class CatalogoTutoriasController implements ActionListener {
      * Carga todas las sesiones disponibles al iniciar.
      */
     private void cargarSesionesDisponibles() {
+    try {
         List<Sesion> sesiones = sesionService.obtenerTodasLasSesionesDisponibles();
+        System.out.println(">>> SESIONES OBTENIDAS DE LA BD: " + sesiones.size());
         
         DefaultTableModel modelo = vista.modeloTabla;
         modelo.setRowCount(0);
@@ -170,13 +171,18 @@ public class CatalogoTutoriasController implements ActionListener {
                 sesion.getAsignatura(),
                 sesion.getTema(),
                 sesion.getTutorNombre(),
-                sesion.getFecha().toString(),
-                sesion.getHoraInicio().toString() + " - " + sesion.getHoraFin().toString(),
+                (sesion.getFecha() != null) ? sesion.getFecha().toString() : "",
+                (sesion.getHoraInicio() != null && sesion.getHoraFin() != null) 
+                    ? sesion.getHoraInicio().toString() + " - " + sesion.getHoraFin().toString() : "",
                 sesion.getModalidad(),
                 sesion.getSede(),
                 sesion.getCuposDisponibles()
             };
             modelo.addRow(fila);
+        }
+    } catch (Exception ex) {
+        System.err.println("Error al cargar sesiones en la tabla:");
+        ex.printStackTrace();
         }
     }
     

@@ -34,7 +34,7 @@ public class PublicarSesionController implements ActionListener {
         }
     }
     
-    private void publicarSesion() {
+   private void publicarSesion() {
     try {
         // Obtener datos de la vista
         String asignatura = (String) vista.cboAsignatura.getSelectedItem();
@@ -52,25 +52,49 @@ public class PublicarSesionController implements ActionListener {
         int cupoMaximo = Integer.parseInt(cupoMaximoStr);
         String tipoSesion = (String) vista.cboTipoSesion.getSelectedItem();
         String modalidad = (String) vista.cboModalidad.getSelectedItem();
-        
-        
-        Date fechaDate = (Date) vista.spnFecha.getValue();
-        LocalDate fecha = fechaDate.toInstant()
+
+        // 1. Obtener y validar Fecha (Única declaración de 'fecha')
+        Object valFecha = vista.spnFecha.getValue();
+        if (!(valFecha instanceof Date)) {
+            JOptionPane.showMessageDialog(vista, "Selecciona una fecha válida.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        LocalDate fecha = ((Date) valFecha).toInstant()
             .atZone(java.time.ZoneId.systemDefault())
             .toLocalDate();
+
         
-        // ✅ CORRECTO: Obtener horas de los JSpinners (spnHoraInicio y spnHoraFin)
-        Date horaInicioDate = (Date) vista.spnHoraInicio.getValue();
-        LocalTime horaInicio = horaInicioDate.toInstant()
-            .atZone(java.time.ZoneId.systemDefault())
-            .toLocalTime();
-        
-        Date horaFinDate = (Date) vista.spnHoraFin.getValue();
-        LocalTime horaFin = horaFinDate.toInstant()
-            .atZone(java.time.ZoneId.systemDefault())
-            .toLocalTime();
-        
-        String sede = (String) vista.cboSede.getSelectedItem();
+        // 1. Obtener y convertir Hora Inicio
+        Object valInicio = vista.spnHoraInicio.getValue();
+        if (!(valInicio instanceof Date)) {
+            JOptionPane.showMessageDialog(vista, "Selecciona una hora de inicio válida.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        java.util.Calendar calInicio = java.util.Calendar.getInstance();
+        calInicio.setTime((Date) valInicio);
+        LocalTime horaInicio = LocalTime.of(
+            calInicio.get(java.util.Calendar.HOUR_OF_DAY),
+            calInicio.get(java.util.Calendar.MINUTE),
+            calInicio.get(java.util.Calendar.SECOND)
+        );
+
+// 2. Obtener y convertir Hora Fin
+        Object valFin = vista.spnHoraFin.getValue();
+        if (!(valFin instanceof Date)) {
+            JOptionPane.showMessageDialog(vista, "Selecciona una hora de fin válida.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        java.util.Calendar calFin = java.util.Calendar.getInstance();
+        calFin.setTime((Date) valFin);
+        LocalTime horaFin = LocalTime.of(
+            calFin.get(java.util.Calendar.HOUR_OF_DAY),
+            calFin.get(java.util.Calendar.MINUTE),
+            calFin.get(java.util.Calendar.SECOND)
+            );
+
+        // 4. Obtención segura de Combos
+        Object sedeObj = vista.cboSede.getSelectedItem();
+        String sede = (sedeObj != null) ? sedeObj.toString() : "";
         
         // Validaciones HU-4
         if (asignatura == null || tema.isEmpty()) {
@@ -117,12 +141,13 @@ public class PublicarSesionController implements ActionListener {
             "El cupo máximo debe ser un número válido", 
             "Error", JOptionPane.ERROR_MESSAGE);
     } catch (Exception ex) {
+        String mensajeError = (ex.getMessage() != null) ? ex.getMessage() : ex.toString();
         JOptionPane.showMessageDialog(vista, 
-            "Error del sistema: " + ex.getMessage(), 
+            "Error del sistema: " + mensajeError, 
             "Error", JOptionPane.ERROR_MESSAGE);
         ex.printStackTrace();
-        }
     }
+}
     
     private void volver() {
         vista.dispose();
