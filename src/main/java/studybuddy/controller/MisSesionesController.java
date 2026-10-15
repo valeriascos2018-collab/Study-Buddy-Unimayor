@@ -2,7 +2,7 @@ package studybuddy.controller;
 
 import studybuddy.gui.FrmMisSesiones;
 import studybuddy.gui.FrmEditarSesion;
-import studybuddy.logic.SesionService;
+import studybuddy.logic.ISesionService;
 import studybuddy.model.Sesion;
 import studybuddy.model.Usuario;
 import studybuddy.gui.FrmMenuPrincipal;
@@ -21,12 +21,12 @@ import javax.swing.table.DefaultTableModel;
 public class MisSesionesController implements ActionListener {
     
     private final FrmMisSesiones vista;
-    private final SesionService service;
+    private final ISesionService service;
     private final Usuario tutor;
     
-    public MisSesionesController(FrmMisSesiones vista, Usuario tutor) {
+    public MisSesionesController(FrmMisSesiones vista, Usuario tutor, ISesionService service) {
         this.vista = vista;
-        this.service = new SesionService();
+        this.service = service;
         this.tutor = tutor;
         
         // Registrar listeners
@@ -99,7 +99,7 @@ public class MisSesionesController implements ActionListener {
         }
         
         // HU-6 CA3: Validar que no sea sesión finalizada
-        if ("COMPLETADA".equals(sesion.getEstado())) {
+        if (sesion.estaCompletada()) {
             JOptionPane.showMessageDialog(vista, 
                 "No es posible modificar una sesión ya finalizada", 
                 "Error", JOptionPane.ERROR_MESSAGE);
@@ -141,7 +141,7 @@ public class MisSesionesController implements ActionListener {
         }
         
         // HU-6 CA3: Validar que no sea sesión finalizada
-        if ("COMPLETADA".equals(sesion.getEstado())) {
+        if (sesion.estaCompletada()) {
             JOptionPane.showMessageDialog(vista, 
                 "No es posible modificar una sesión ya finalizada", 
                 "Error", JOptionPane.ERROR_MESSAGE);

@@ -10,7 +10,7 @@ package studybuddy.controller;
  */
 import studybuddy.gui.FrmMenuPrincipal;
 import studybuddy.gui.FrmNotificaciones;
-import studybuddy.logic.NotificacionService;
+import studybuddy.logic.IBandejaNotificaciones;
 import studybuddy.model.Notificacion;
 import studybuddy.model.Usuario;
 
@@ -31,14 +31,14 @@ public class NotificacionesController implements ActionListener {
     private static final DateTimeFormatter FORMATO = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     private final FrmNotificaciones vista;
-    private final NotificacionService service;
+    private final IBandejaNotificaciones service;
     private final Usuario usuario;
     private List<Notificacion> notificaciones = new ArrayList<>();
 
-    public NotificacionesController(FrmNotificaciones vista, Usuario usuario) {
+    public NotificacionesController(FrmNotificaciones vista, Usuario usuario, IBandejaNotificaciones service) {
         this.vista = vista;
         this.usuario = usuario;
-        this.service = new NotificacionService();
+        this.service = service;
 
         this.vista.btnMarcarTodas.addActionListener(this);
         this.vista.btnVolver.addActionListener(this);

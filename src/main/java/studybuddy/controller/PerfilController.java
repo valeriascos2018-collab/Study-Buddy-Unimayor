@@ -1,7 +1,7 @@
 package studybuddy.controller;
 
 import studybuddy.gui.FrmPerfil;
-import studybuddy.logic.PerfilService;
+import studybuddy.logic.IPerfilService;
 import studybuddy.model.Usuario;
 
 import java.awt.event.ActionEvent;
@@ -15,10 +15,10 @@ import javax.swing.JOptionPane;
 public class PerfilController implements ActionListener {
     
     private final FrmPerfil vista;
-    private final PerfilService servicio;
+    private final IPerfilService servicio;
     private Usuario usuarioActual;
     
-    public PerfilController(FrmPerfil vista, Usuario usuario, PerfilService servicio) {
+    public PerfilController(FrmPerfil vista, Usuario usuario, IPerfilService servicio) {
         this.vista = vista;
         this.servicio = servicio;
         this.usuarioActual = usuario;

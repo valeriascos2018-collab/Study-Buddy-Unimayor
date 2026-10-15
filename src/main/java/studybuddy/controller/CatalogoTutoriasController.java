@@ -1,8 +1,8 @@
 package studybuddy.controller;
 
 import studybuddy.gui.FrmCatalogoTutorias;
-import studybuddy.logic.SesionService;
-import studybuddy.logic.ReservaService;
+import studybuddy.logic.ISesionService;
+import studybuddy.logic.IReservaService;
 import studybuddy.model.Sesion;
 import studybuddy.model.Usuario;
 import studybuddy.gui.FrmMenuPrincipal;
@@ -19,14 +19,15 @@ import javax.swing.table.DefaultTableModel;
 public class CatalogoTutoriasController implements ActionListener {
     
     private final FrmCatalogoTutorias vista;
-    private final SesionService sesionService;
-    private final ReservaService reservaService;
+    private final ISesionService sesionService;
+    private final IReservaService reservaService;
     private final Usuario estudiante;
     
-    public CatalogoTutoriasController(FrmCatalogoTutorias vista, Usuario estudiante) {
+    public CatalogoTutoriasController(FrmCatalogoTutorias vista, Usuario estudiante,
+                                      ISesionService sesionService, IReservaService reservaService) {
         this.vista = vista;
-        this.sesionService = new SesionService();
-        this.reservaService = new ReservaService();
+        this.sesionService = sesionService;
+        this.reservaService = reservaService;
         this.estudiante = estudiante;
         
         // Registrar listeners

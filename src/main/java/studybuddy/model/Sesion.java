@@ -36,7 +36,7 @@ public class Sesion {
         this.horaFin = horaFin;
         this.sede = sede;
         this.tutorId = tutorId;
-        this.estado = "PROGRAMADA";
+        this.estado = EstadoSesion.PROGRAMADA.name();
     }
     
     // Getters y Setters
@@ -75,6 +75,12 @@ public class Sesion {
     
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
+
+    /** Regla única para "sesión finalizada" (usada por servicios y controladores). */
+    public boolean estaCompletada() { return EstadoSesion.COMPLETADA.name().equals(estado); }
+
+    /** Regla única para "sesión disponible para reservas". */
+    public boolean estaProgramada() { return EstadoSesion.PROGRAMADA.name().equals(estado); }
     
     public int getTutorId() { return tutorId; }
     public void setTutorId(int tutorId) { this.tutorId = tutorId; }
@@ -82,3 +88,4 @@ public class Sesion {
     public String getTutorNombre() { return tutorNombre; }
     public void setTutorNombre(String tutorNombre) { this.tutorNombre = tutorNombre; }
 }
+

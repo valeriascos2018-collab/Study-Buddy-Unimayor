@@ -2,6 +2,7 @@ package studybuddy.controller;
 
 import studybuddy.gui.FrmLogin;
 import studybuddy.logic.IAutenticacionService;
+import studybuddy.logic.IValidadorUsuario;
 import studybuddy.model.Usuario;
 import javax.swing.JOptionPane;
 import java.awt.event.ActionEvent;
@@ -11,11 +12,13 @@ public class LoginController {
     
     private final FrmLogin vista;
     private final IAutenticacionService servicio;
+    private final IValidadorUsuario validador;
     
     // ✅ Constructor que coincide con tu ControllerFactory
-    public LoginController(FrmLogin vista, IAutenticacionService servicio) {
+    public LoginController(FrmLogin vista, IAutenticacionService servicio, IValidadorUsuario validador) {
         this.vista = vista;
         this.servicio = servicio;
+        this.validador = validador;
         
         // ✅ 1. Escuchar el clic del botón de Login
         this.vista.btnLogin.addActionListener(new ActionListener() {
@@ -45,7 +48,7 @@ public class LoginController {
         return;
     }
     
-    if (!servicio.validarDominioInstitucional(correo)) {
+    if (!validador.validarDominioInstitucional(correo)) {
         JOptionPane.showMessageDialog(vista, "El correo debe ser institucional (@unimayor.edu.co).", "Error de dominio", JOptionPane.ERROR_MESSAGE);
         return;
     }

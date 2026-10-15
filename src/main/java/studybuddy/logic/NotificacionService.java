@@ -10,8 +10,6 @@ package studybuddy.logic;
  */
 import studybuddy.dao.NotificacionDAO;
 import studybuddy.dao.ReservaDAO;
-import studybuddy.dao.impl.NotificacionDAOImpl;
-import studybuddy.dao.impl.ReservaDAOImpl;
 import studybuddy.model.Notificacion;
 import studybuddy.model.Sesion;
 
@@ -26,7 +24,7 @@ import java.util.Objects;
  * HU-6: avisa a los estudiantes con reserva cuando el tutor
  * modifica o cancela una sesión.
  */
-public class NotificacionService {
+public class NotificacionService implements INotificadorSesiones, IBandejaNotificaciones {
 
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter FORMATO_HORA = DateTimeFormatter.ofPattern("HH:mm");
@@ -35,9 +33,9 @@ public class NotificacionService {
     private final NotificacionDAO notificacionDAO;
     private final ReservaDAO reservaDAO;
 
-    public NotificacionService() {
-        this.notificacionDAO = new NotificacionDAOImpl();
-        this.reservaDAO = new ReservaDAOImpl();
+    public NotificacionService(NotificacionDAO notificacionDAO, ReservaDAO reservaDAO) {
+        this.notificacionDAO = notificacionDAO;
+        this.reservaDAO = reservaDAO;
     }
 
     // ------------------------------------------------------------------
@@ -52,6 +50,7 @@ public class NotificacionService {
      * @param despues la sesión ya con los cambios guardados
      * @return cuántos estudiantes fueron notificados
      */
+    @Override
     public int notificarEdicion(Sesion antes, Sesion despues) {
         String cambios = describirCambios(antes, despues);
         if (cambios.isEmpty()) {
@@ -67,10 +66,13 @@ public class NotificacionService {
     }
 
     /**
-     * Notifica la cancelación de una sesión y cancela también las reservas de los estudiantes.
+     * Notifica la cancelación de una sesión a los estudiantes con reserva vigente.
+     * Cancelar las reservas es responsabilidad de quien llama (SesionService), y debe
+     * hacerse DESPUÉS de notificar, mientras las reservas siguen vigentes.
      *
      * @return cuántos estudiantes fueron notificados
      */
+    @Override
     public int notificarCancelacion(Sesion sesion) {
         String mensaje = "Tu tutoría de " + sesion.getAsignatura() + " (" + sesion.getTema() + ") "
                 + "del " + sesion.getFecha().format(FORMATO_FECHA)
@@ -80,13 +82,11 @@ public class NotificacionService {
                 + " fue CANCELADA por el tutor " + nombreTutor(sesion)
                 + ". Tu reserva quedó cancelada.";
 
-        // Primero se notifica (mientras las reservas siguen vigentes) y después se cancelan
-        int notificados = enviarAReservasActivas(sesion.getId(), Notificacion.TIPO_SESION_CANCELADA, mensaje);
-        reservaDAO.cancelarReservasDeSesion(sesion.getId());
-        return notificados;
+        return enviarAReservasActivas(sesion.getId(), Notificacion.TIPO_SESION_CANCELADA, mensaje);
     }
 
     /** Cuántos estudiantes tienen reserva vigente en la sesión (para avisarle al tutor). */
+    @Override
     public int contarEstudiantesConReserva(int sesionId) {
         return reservaDAO.obtenerEstudiantesConReservaActiva(sesionId).size();
     }
@@ -95,18 +95,22 @@ public class NotificacionService {
     // Consulta (lo usa la pantalla de notificaciones y el menú)
     // ------------------------------------------------------------------
 
+    @Override
     public List<Notificacion> obtenerNotificaciones(int usuarioId) {
         return notificacionDAO.obtenerPorUsuario(usuarioId);
     }
 
+    @Override
     public int contarNoLeidas(int usuarioId) {
         return notificacionDAO.contarNoLeidas(usuarioId);
     }
 
+    @Override
     public boolean marcarComoLeida(int notificacionId, int usuarioId) {
         return notificacionDAO.marcarComoLeida(notificacionId, usuarioId);
     }
 
+    @Override
     public boolean marcarTodasComoLeidas(int usuarioId) {
         return notificacionDAO.marcarTodasComoLeidas(usuarioId);
     }
@@ -175,4 +179,3 @@ public class NotificacionService {
         return mensaje.substring(0, LARGO_MAXIMO_MENSAJE - 3) + "...";
     }
 }
-

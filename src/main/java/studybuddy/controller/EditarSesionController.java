@@ -8,9 +8,10 @@ package studybuddy.controller;
  *
  * @author yoban
  */
+
 import studybuddy.gui.FrmEditarSesion;
 import studybuddy.gui.FrmMenuPrincipal;
-import studybuddy.logic.SesionService;
+import studybuddy.logic.ISesionService;
 import studybuddy.model.Sesion;
 import studybuddy.model.Usuario;
 import java.awt.event.ActionEvent;
@@ -23,11 +24,11 @@ import javax.swing.JOptionPane;
 
 public class EditarSesionController implements ActionListener {
     private final FrmEditarSesion vista;
-    private final SesionService service;
+    private final ISesionService service;
     private final Usuario usuario; // AGREGADO
 
     // CORREGIDO: Se añade el usuario al constructor
-    public EditarSesionController(FrmEditarSesion vista, SesionService service, Usuario usuario) {
+    public EditarSesionController(FrmEditarSesion vista, ISesionService service, Usuario usuario) {
         this.vista = vista;
         this.service = service;
         this.usuario = usuario;

@@ -4,28 +4,47 @@
  */
 package studybuddy.controller;
 
+import studybuddy.factory.ServiceFactory;
+import studybuddy.gui.FrmCatalogoTutorias;
 import studybuddy.gui.FrmLogin;
-import studybuddy.gui.FrmRegistro;
+import studybuddy.gui.FrmMisSesiones;
+import studybuddy.gui.FrmNotificaciones;
 import studybuddy.gui.FrmPerfil;
-import studybuddy.logic.IAutenticacionService;
-import studybuddy.logic.AutenticacionService;
-import studybuddy.logic.PerfilService;
+import studybuddy.gui.FrmPublicarSesion;
+import studybuddy.gui.FrmRegistro;
 import studybuddy.model.Usuario;
 
 public class ControllerFactory {
-    
+
     public static LoginController crearLoginController(FrmLogin vista) {
-        IAutenticacionService servicio = new AutenticacionService();
-        return new LoginController(vista, servicio);
+        return new LoginController(vista,
+                ServiceFactory.crearAutenticacionService(),
+                ServiceFactory.crearValidadorUsuario());
     }
-    
+
     public static RegistroController crearRegistroController(FrmRegistro vista) {
-        IAutenticacionService servicio = new AutenticacionService();
-        return new RegistroController(vista, servicio);
+        return new RegistroController(vista, ServiceFactory.crearAutenticacionService());
     }
-    
+
     public static PerfilController crearPerfilController(FrmPerfil vista, Usuario usuario) {
-        PerfilService servicio = new PerfilService();
-        return new PerfilController(vista, usuario, servicio);
+        return new PerfilController(vista, usuario, ServiceFactory.crearPerfilService());
+    }
+
+    public static CatalogoTutoriasController crearCatalogoController(FrmCatalogoTutorias vista, Usuario estudiante) {
+        return new CatalogoTutoriasController(vista, estudiante,
+                ServiceFactory.crearSesionService(),
+                ServiceFactory.crearReservaService());
+    }
+
+    public static PublicarSesionController crearPublicarSesionController(FrmPublicarSesion vista, int tutorId) {
+        return new PublicarSesionController(vista, tutorId, ServiceFactory.crearSesionService());
+    }
+
+    public static MisSesionesController crearMisSesionesController(FrmMisSesiones vista, Usuario tutor) {
+        return new MisSesionesController(vista, tutor, ServiceFactory.crearSesionService());
+    }
+
+    public static NotificacionesController crearNotificacionesController(FrmNotificaciones vista, Usuario usuario) {
+        return new NotificacionesController(vista, usuario, ServiceFactory.crearBandejaNotificaciones());
     }
 }

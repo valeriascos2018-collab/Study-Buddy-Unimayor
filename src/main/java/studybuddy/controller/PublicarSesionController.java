@@ -1,7 +1,7 @@
 package studybuddy.controller;
 
 import studybuddy.gui.FrmPublicarSesion;
-import studybuddy.logic.SesionService;
+import studybuddy.logic.ISesionService;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.LocalDate;
@@ -13,12 +13,12 @@ import java.util.Date;
 public class PublicarSesionController implements ActionListener {
     
     private final FrmPublicarSesion vista;
-    private final SesionService service;
+    private final ISesionService service;
     private final int tutorId;
     
-    public PublicarSesionController(FrmPublicarSesion vista, int tutorId) {
+    public PublicarSesionController(FrmPublicarSesion vista, int tutorId, ISesionService service) {
         this.vista = vista;
-        this.service = new SesionService();
+        this.service = service;
         this.tutorId = tutorId;
         
         this.vista.btnPublicar.addActionListener(this);

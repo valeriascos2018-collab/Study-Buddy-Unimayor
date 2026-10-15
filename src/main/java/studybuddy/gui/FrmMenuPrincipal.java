@@ -9,13 +9,10 @@ package studybuddy.gui;
  * @author yoban
  */
 
-import studybuddy.controller.CatalogoTutoriasController;
-import studybuddy.controller.MisSesionesController;
-import studybuddy.controller.PublicarSesionController;
 import studybuddy.model.Rol;
 import studybuddy.model.Usuario;
-import studybuddy.controller.NotificacionesController;
-import studybuddy.logic.NotificacionService;
+import studybuddy.controller.ControllerFactory;
+import studybuddy.factory.ServiceFactory;
 import javax.swing.*;
 import java.awt.*;
 
@@ -73,7 +70,7 @@ public class FrmMenuPrincipal extends JFrame {
         JButton btnCatalogo = crearBotonMenu("📚 Ver catálogo de tutorías", COLOR_PRIMARIO);
         btnCatalogo.addActionListener(e -> {
             FrmCatalogoTutorias v = new FrmCatalogoTutorias();
-            new CatalogoTutoriasController(v, usuario);
+            ControllerFactory.crearCatalogoController(v, usuario);
             v.setVisible(true);
             dispose();
         });
@@ -86,7 +83,7 @@ public class FrmMenuPrincipal extends JFrame {
             JButton btnPublicar = crearBotonMenu("➕ Publicar sesión", new Color(40, 167, 69));
             btnPublicar.addActionListener(e -> {
                 FrmPublicarSesion v = new FrmPublicarSesion();
-                new PublicarSesionController(v, usuario.getId());
+                ControllerFactory.crearPublicarSesionController(v, usuario.getId());
                 v.setVisible(true);
                 dispose();
             });
@@ -97,7 +94,7 @@ public class FrmMenuPrincipal extends JFrame {
             JButton btnMisSesiones = crearBotonMenu("📋 Mis sesiones", new Color(255, 165, 0));
             btnMisSesiones.addActionListener(e -> {
                 FrmMisSesiones v = new FrmMisSesiones();
-                new MisSesionesController(v, usuario);
+                ControllerFactory.crearMisSesionesController(v, usuario);
                 v.setVisible(true);
                 dispose();
             });
@@ -108,7 +105,7 @@ public class FrmMenuPrincipal extends JFrame {
 
         // --- Botón: Mi perfil ---
                 // --- Botón: Notificaciones (muestra cuántas hay sin leer) ---
-        int sinLeer = new NotificacionService().contarNoLeidas(usuario.getId());
+        int sinLeer = ServiceFactory.crearBandejaNotificaciones().contarNoLeidas(usuario.getId());
         String textoNotificaciones = sinLeer > 0
                 ? "🔔 Notificaciones (" + sinLeer + " nuevas)"
                 : "🔔 Notificaciones";
@@ -116,7 +113,7 @@ public class FrmMenuPrincipal extends JFrame {
         JButton btnNotificaciones = crearBotonMenu(textoNotificaciones, colorNotificaciones);
         btnNotificaciones.addActionListener(e -> {
             FrmNotificaciones v = new FrmNotificaciones();
-            new NotificacionesController(v, usuario);
+            ControllerFactory.crearNotificacionesController(v, usuario);
             v.setVisible(true);
             dispose();
         });
