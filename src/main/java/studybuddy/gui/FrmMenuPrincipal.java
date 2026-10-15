@@ -14,7 +14,8 @@ import studybuddy.controller.MisSesionesController;
 import studybuddy.controller.PublicarSesionController;
 import studybuddy.model.Rol;
 import studybuddy.model.Usuario;
-
+import studybuddy.controller.NotificacionesController;
+import studybuddy.logic.NotificacionService;
 import javax.swing.*;
 import java.awt.*;
 
@@ -27,7 +28,7 @@ public class FrmMenuPrincipal extends JFrame {
     public FrmMenuPrincipal(Usuario usuario) {
         setTitle("StudyBuddy - Menú principal");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(500, 500);
+        setSize(500, 600);
         setLocationRelativeTo(null);
         setResizable(false);
 
@@ -104,6 +105,24 @@ public class FrmMenuPrincipal extends JFrame {
             panelContenido.add(btnMisSesiones);
             panelContenido.add(Box.createVerticalStrut(15));
         }
+
+        // --- Botón: Mi perfil ---
+                // --- Botón: Notificaciones (muestra cuántas hay sin leer) ---
+        int sinLeer = new NotificacionService().contarNoLeidas(usuario.getId());
+        String textoNotificaciones = sinLeer > 0
+                ? "🔔 Notificaciones (" + sinLeer + " nuevas)"
+                : "🔔 Notificaciones";
+        Color colorNotificaciones = sinLeer > 0 ? new Color(220, 53, 69) : new Color(23, 162, 184);
+        JButton btnNotificaciones = crearBotonMenu(textoNotificaciones, colorNotificaciones);
+        btnNotificaciones.addActionListener(e -> {
+            FrmNotificaciones v = new FrmNotificaciones();
+            new NotificacionesController(v, usuario);
+            v.setVisible(true);
+            dispose();
+        });
+        btnNotificaciones.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panelContenido.add(btnNotificaciones);
+        panelContenido.add(Box.createVerticalStrut(15));
 
         // --- Botón: Mi perfil ---
         JButton btnPerfil = crearBotonMenu("👤 Mi perfil", new Color(108, 117, 125));

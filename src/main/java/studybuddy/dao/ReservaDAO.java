@@ -15,4 +15,8 @@ public interface ReservaDAO {
     List<Reserva> obtenerReservasPorSesion(int sesionId);
     boolean verificarCruceHorarioEstudiante(int estudianteId, String fecha, String horaInicio, String horaFin);
     boolean actualizarEstado(int reservaId, String estado);
+    List<Integer> obtenerEstudiantesConReservaActiva(int sesionId);
+
+    /** Marca como CANCELADA todas las reservas vigentes de la sesión. Devuelve cuántas cambió. */
+    int cancelarReservasDeSesion(int sesionId);
 }

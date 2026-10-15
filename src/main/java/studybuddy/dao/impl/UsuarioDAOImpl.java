@@ -57,7 +57,7 @@ public class UsuarioDAOImpl implements UsuarioDAO {
     
     @Override
     public void actualizarPerfil(Usuario usuario) throws SQLException {
-        String sql = "UPDATE usuarios SET nombre_completo=?, facultad=?, programa_academico=? " +
+         String sql = "UPDATE usuarios SET nombre_completo=?, facultad=?, programa_academico=?, rol=? " +
                      "WHERE id=?";
         
         try (Connection conn = ConexionBD.getConexion();
@@ -66,10 +66,11 @@ public class UsuarioDAOImpl implements UsuarioDAO {
             ps.setString(1, usuario.getNombreCompleto());
             ps.setString(2, usuario.getFacultad());
             ps.setString(3, usuario.getProgramaAcademico());
-            ps.setInt(4, usuario.getId());
+            ps.setString(4, usuario.getRol().name()); // UPDATE del rol
+            ps.setInt(5, usuario.getId());
             
             ps.executeUpdate();
-        }
+        }    
     }
     
     @Override

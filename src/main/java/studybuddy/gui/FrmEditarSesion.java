@@ -102,7 +102,7 @@ public class FrmEditarSesion extends JFrame {
         agregarCampo(panelFormulario, gbc, 1, 6, spnHoraFin, fieldFont, fieldBg);
         
         agregarLabel(panelFormulario, gbc, 0, 7, "Sede / Enlace:", labelFont);
-        cboSede = new JComboBox<>(new String[]{"Bicentenario", "Casa Obando", "Encarnación", "Enlace Virtual"});
+        cboSede = new JComboBox<>(new String[]{"Bicentenario", "Casa Obando", "Encarnación", "Virtual"});
         agregarCampo(panelFormulario, gbc, 1, 7, cboSede, fieldFont, fieldBg);
         
         panelPrincipal.add(panelFormulario, BorderLayout.CENTER);

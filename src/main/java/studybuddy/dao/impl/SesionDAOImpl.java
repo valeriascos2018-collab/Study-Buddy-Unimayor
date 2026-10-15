@@ -10,6 +10,8 @@ import studybuddy.config.ConexionBD; // Asegúrate de que esta ruta sea correcta
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 public class SesionDAOImpl implements SesionDAO {
     
@@ -101,7 +103,7 @@ public class SesionDAOImpl implements SesionDAO {
     
     @Override
     public Sesion obtenerSesionPorId(int id) {
-        String sql = "SELECT s.*, u.nombre as tutor_nombre FROM sesiones s " +
+         String sql = "SELECT s.*, u.nombre_completo as tutor_nombre FROM sesiones s " +
                      "JOIN usuarios u ON s.tutor_id = u.id WHERE s.id=?";
         
         try (Connection conn = ConexionBD.getConexion();
@@ -123,7 +125,8 @@ public class SesionDAOImpl implements SesionDAO {
     @Override
     public List<Sesion> obtenerSesionesPorTutor(int tutorId) {
         List<Sesion> sesiones = new ArrayList<>();
-        String sql = "SELECT * FROM sesiones WHERE tutor_id=? ORDER BY fecha, hora_inicio";
+        String sql = "SELECT s.*, u.nombre_completo as tutor_nombre FROM sesiones s " +
+                     "JOIN usuarios u ON s.tutor_id = u.id WHERE s.tutor_id=? ORDER BY s.fecha, s.hora_inicio";
         
         try (Connection conn = ConexionBD.getConexion();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -144,7 +147,7 @@ public class SesionDAOImpl implements SesionDAO {
     @Override
     public List<Sesion> obtenerTodasLasSesionesDisponibles() {
         List<Sesion> sesiones = new ArrayList<>();
-        String sql = "SELECT s.*, u.nombre as tutor_nombre FROM sesiones s " +
+        String sql = "SELECT s.*, u.nombre_completo as tutor_nombre FROM sesiones s " +
                      "JOIN usuarios u ON s.tutor_id = u.id " +
                      "WHERE s.estado='PROGRAMADA' AND s.cupos_disponibles > 0 " +
                      "ORDER BY s.fecha, s.hora_inicio";
@@ -167,7 +170,7 @@ public class SesionDAOImpl implements SesionDAO {
     public List<Sesion> buscarSesiones(String asignatura, String sede, String modalidad) {
         List<Sesion> sesiones = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT s.*, u.nombre as tutor_nombre FROM sesiones s " +
+            "SELECT s.*, u.nombre_completo as tutor_nombre FROM sesiones s " +
             "JOIN usuarios u ON s.tutor_id = u.id " +
             "WHERE s.estado='PROGRAMADA' AND s.cupos_disponibles > 0"
         );
@@ -210,6 +213,21 @@ public class SesionDAOImpl implements SesionDAO {
     }
     
     @Override
+    public void actualizarSesionesPasadas() {
+        String sql = "UPDATE sesiones SET estado = 'COMPLETADA' WHERE estado = 'PROGRAMADA' AND fecha < CURRENT_DATE";
+        try (Connection conn = ConexionBD.getConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            int filas = ps.executeUpdate();
+            if (filas > 0) {
+                System.out.println("Se actualizaron " + filas + " sesiones pasadas a COMPLETADA.");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al actualizar sesiones pasadas: " + e.getMessage());
+        }
+    }
+    
+    
+    @Override
     public boolean verificarCruceHorario(int tutorId, String fecha, String horaInicio, String horaFin) {
         // Lógica simplificada de superposición de horarios: 
         // (InicioNuevo < FinExistente) AND (FinNuevo > InicioExistente)
@@ -220,9 +238,9 @@ public class SesionDAOImpl implements SesionDAO {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, tutorId);
-            ps.setDate(2, Date.valueOf(fecha));
-            ps.setTime(3, Time.valueOf(horaFin));      // Fin existente debe ser mayor que inicio nuevo
-            ps.setTime(4, Time.valueOf(horaInicio));   // Inicio existente debe ser menor que fin nuevo
+            ps.setDate(2, Date.valueOf(LocalDate.parse(fecha)));
+            ps.setTime(3, Time.valueOf(LocalTime.parse(horaFin)));
+            ps.setTime(4, Time.valueOf(LocalTime.parse(horaInicio)));   // Inicio existente debe ser menor que fin nuevo
             
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {

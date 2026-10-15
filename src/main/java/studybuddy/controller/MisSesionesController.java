@@ -108,8 +108,9 @@ public class MisSesionesController implements ActionListener {
         
         // Abrir formulario de edición (debes crear FrmEditarSesion)
         FrmEditarSesion frmEditar = new FrmEditarSesion(sesion);
-        frmEditar.setController(new EditarSesionController(frmEditar, service));
+        frmEditar.setController(new EditarSesionController(frmEditar, service, tutor));
         frmEditar.setVisible(true);
+        
         
         // Recargar tabla después de editar
         cargarSesiones();

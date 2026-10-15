@@ -9,9 +9,10 @@ package studybuddy.controller;
  * @author yoban
  */
 import studybuddy.gui.FrmEditarSesion;
+import studybuddy.gui.FrmMenuPrincipal;
 import studybuddy.logic.SesionService;
 import studybuddy.model.Sesion;
-
+import studybuddy.model.Usuario;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.LocalDate;
@@ -23,10 +24,13 @@ import javax.swing.JOptionPane;
 public class EditarSesionController implements ActionListener {
     private final FrmEditarSesion vista;
     private final SesionService service;
+    private final Usuario usuario; // AGREGADO
 
-    public EditarSesionController(FrmEditarSesion vista, SesionService service) {
+    // CORREGIDO: Se añade el usuario al constructor
+    public EditarSesionController(FrmEditarSesion vista, SesionService service, Usuario usuario) {
         this.vista = vista;
         this.service = service;
+        this.usuario = usuario;
         this.vista.btnGuardar.addActionListener(this);
         this.vista.btnCancelar.addActionListener(this);
     }
@@ -48,16 +52,22 @@ public class EditarSesionController implements ActionListener {
             int cupo = Integer.parseInt(vista.txtCupoMaximo.getText().trim());
             String modalidad = (String) vista.cboModalidad.getSelectedItem();
             LocalDate fecha = ((Date) vista.spnFecha.getValue()).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            LocalTime hInicio = ((Date) vista.spnHoraInicio.getValue()).toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
-            LocalTime hFin = ((Date) vista.spnHoraFin.getValue()).toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
+            
+            // CORREGIDO: Forzar segundos y nanosegundos a 0 para evitar conflictos en la BD
+            LocalTime hInicio = ((Date) vista.spnHoraInicio.getValue()).toInstant()
+                    .atZone(ZoneId.systemDefault()).toLocalTime().withSecond(0).withNano(0);
+            LocalTime hFin = ((Date) vista.spnHoraFin.getValue()).toInstant()
+                    .atZone(ZoneId.systemDefault()).toLocalTime().withSecond(0).withNano(0);
+            
             String sede = (String) vista.cboSede.getSelectedItem();
 
-            // HU-6 CA3: El service ya valida que no se pueda editar si está completada
             String error = service.editarSesion(id, asignatura, tema, cupo, fecha, hInicio, hFin, sede);
 
             if (error == null) {
                 JOptionPane.showMessageDialog(vista, "Sesión actualizada correctamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
                 vista.dispose();
+                // CORREGIDO: Reabrir el menú pasando el objeto usuario
+                new FrmMenuPrincipal(usuario).setVisible(true);
             } else {
                 JOptionPane.showMessageDialog(vista, error, "Error", JOptionPane.ERROR_MESSAGE);
             }

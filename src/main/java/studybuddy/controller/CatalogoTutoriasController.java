@@ -66,21 +66,17 @@ public class CatalogoTutoriasController implements ActionListener {
         String modalidadFiltro = (modalidad == null || "Todas".equalsIgnoreCase(modalidad.trim())) ? null : modalidad.trim();
         List<Sesion> sesiones = sesionService.buscarSesiones(asignaturaFiltro, sedeFiltro, modalidadFiltro);
         
-        // Limpiar tabla
         DefaultTableModel modelo = vista.modeloTabla;
         modelo.setRowCount(0);
         
-        // HU-7 CA2: Consulta sin resultados
         if (sesiones.isEmpty()) {
-            JOptionPane.showMessageDialog(vista, 
-                "No se encontraron tutorías disponibles con los criterios seleccionados", 
-                "Sin resultados", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(vista, "No se encontraron tutorías disponibles con los criterios seleccionados", "Sin resultados", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
         
-        // Agregar filas a la tabla
         for (Sesion sesion : sesiones) {
             Object[] fila = {
+                sesion.getId(), // AGREGADO: ID en la posición 0
                 sesion.getAsignatura(),
                 sesion.getTema(),
                 sesion.getTutorNombre(),
@@ -99,51 +95,38 @@ public class CatalogoTutoriasController implements ActionListener {
      */
     private void reservarCupo() {
         int filaSeleccionada = vista.tblResultados.getSelectedRow();
-        
         if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(vista, 
-                "Debes seleccionar una sesión para reservar", 
-                "Error", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(vista, "Debes seleccionar una sesión para reservar", "Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
         
-        // Obtener datos de la fila seleccionada
-        String asignatura = (String) vista.modeloTabla.getValueAt(filaSeleccionada, 0);
-        String fechaStr = (String) vista.modeloTabla.getValueAt(filaSeleccionada, 3);
-        String horaStr = (String) vista.modeloTabla.getValueAt(filaSeleccionada, 4);
-        int cuposDisponibles = (int) vista.modeloTabla.getValueAt(filaSeleccionada, 7);
+        // CORREGIDO: Obtener el ID de la sesión desde la columna 0
+        int sesionId = (int) vista.modeloTabla.getValueAt(filaSeleccionada, 0);
+        String asignatura = (String) vista.modeloTabla.getValueAt(filaSeleccionada, 1);
+        int cuposDisponibles = (int) vista.modeloTabla.getValueAt(filaSeleccionada, 8);
         
-        // HU-8 CA2: Validar que haya cupos disponibles
         if (cuposDisponibles <= 0) {
-            JOptionPane.showMessageDialog(vista, 
-                "No hay cupos disponibles para esta sesión", 
-                "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(vista, "No hay cupos disponibles para esta sesión", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
         
-        // Confirmar reserva
         int confirmacion = JOptionPane.showConfirmDialog(vista, 
-            "¿Deseas reservar un cupo en la sesión de " + asignatura + " del " + fechaStr + " a las " + horaStr + "?", 
-            "Confirmar reserva", 
-            JOptionPane.YES_NO_OPTION);
+            "¿Deseas reservar un cupo en la sesión de " + asignatura + "?", 
+            "Confirmar reserva", JOptionPane.YES_NO_OPTION);
         
         if (confirmacion == JOptionPane.YES_OPTION) {
-            // Aquí debes obtener el ID de la sesión (puedes agregarlo como columna oculta en la tabla)
-            // Por ahora, simulamos la reserva
-            String error = reservaService.reservarCupo(estudiante.getId(), asignatura, fechaStr);
+            // CORREGIDO: Se pasa el estudianteId y el sesionId (int, int)
+            String error = reservaService.reservarCupo(estudiante.getId(), sesionId);
             
             if (error == null) {
-                JOptionPane.showMessageDialog(vista, 
-                    "Reserva exitosa. ¡Nos vemos en la sesión!", 
-                    "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(vista, "Reserva exitosa. ¡Nos vemos en la sesión!", "Éxito", JOptionPane.INFORMATION_MESSAGE);
                 buscarSesiones(); // Recargar tabla
             } else {
-                JOptionPane.showMessageDialog(vista, 
-                    error, 
-                    "Error de reserva", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(vista, error, "Error de reserva", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
+
     
     /**
      * Limpia los filtros y recarga todas las sesiones.
@@ -159,30 +142,29 @@ public class CatalogoTutoriasController implements ActionListener {
      * Carga todas las sesiones disponibles al iniciar.
      */
     private void cargarSesionesDisponibles() {
-    try {
-        List<Sesion> sesiones = sesionService.obtenerTodasLasSesionesDisponibles();
-        System.out.println(">>> SESIONES OBTENIDAS DE LA BD: " + sesiones.size());
-        
-        DefaultTableModel modelo = vista.modeloTabla;
-        modelo.setRowCount(0);
-        
-        for (Sesion sesion : sesiones) {
-            Object[] fila = {
-                sesion.getAsignatura(),
-                sesion.getTema(),
-                sesion.getTutorNombre(),
-                (sesion.getFecha() != null) ? sesion.getFecha().toString() : "",
-                (sesion.getHoraInicio() != null && sesion.getHoraFin() != null) 
-                    ? sesion.getHoraInicio().toString() + " - " + sesion.getHoraFin().toString() : "",
-                sesion.getModalidad(),
-                sesion.getSede(),
-                sesion.getCuposDisponibles()
-            };
-            modelo.addRow(fila);
-        }
-    } catch (Exception ex) {
-        System.err.println("Error al cargar sesiones en la tabla:");
-        ex.printStackTrace();
+        try {
+            List<Sesion> sesiones = sesionService.obtenerTodasLasSesionesDisponibles();
+            DefaultTableModel modelo = vista.modeloTabla;
+            modelo.setRowCount(0);
+            
+            for (Sesion sesion : sesiones) {
+                Object[] fila = {
+                    sesion.getId(), // AGREGADO: ID en la posición 0
+                    sesion.getAsignatura(),
+                    sesion.getTema(),
+                    sesion.getTutorNombre(),
+                    (sesion.getFecha() != null) ? sesion.getFecha().toString() : "",
+                    (sesion.getHoraInicio() != null && sesion.getHoraFin() != null) 
+                        ? sesion.getHoraInicio().toString() + " - " + sesion.getHoraFin().toString() : "",
+                    sesion.getModalidad(),
+                    sesion.getSede(),
+                    sesion.getCuposDisponibles()
+                };
+                modelo.addRow(fila);
+            }
+        } catch (Exception ex) {
+            System.err.println("Error al cargar sesiones en la tabla:");
+            ex.printStackTrace();
         }
     }
     

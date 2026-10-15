@@ -14,9 +14,12 @@ import java.util.List;
 public class SesionService {
     
     private final SesionDAO sesionDAO;
+    private final NotificacionService notificacionService;
+    private int ultimosNotificados;
     
     public SesionService() {
         this.sesionDAO = new SesionDAOImpl();
+        this.notificacionService = new NotificacionService();
     }
     
     // HU-4: Publicación de sesión
@@ -66,54 +69,50 @@ public class SesionService {
     
     // HU-6: Edición de sesión
     public String editarSesion(int sesionId, String asignatura, String tema, 
-                               int cupoMaximo, LocalDate fecha,
-                               LocalTime horaInicio, LocalTime horaFin, String sede) {
-        
-        Sesion sesionExistente = sesionDAO.obtenerSesionPorId(sesionId);
-        
-        if (sesionExistente == null) {
-            return "La sesión no existe";
-        }
-        
-        // Validación HU-6 CA3 - No modificar sesión finalizada
-        if ("COMPLETADA".equals(sesionExistente.getEstado())) {
-            return "No es posible modificar una sesión ya finalizada";
-        }
-        
-        // Actualizar datos
-        sesionExistente.setAsignatura(asignatura);
-        sesionExistente.setTema(tema);
-        sesionExistente.setCupoMaximo(cupoMaximo);
-        sesionExistente.setFecha(fecha);
-        sesionExistente.setHoraInicio(horaInicio);
-        sesionExistente.setHoraFin(horaFin);
-        sesionExistente.setSede(sede);
-        
-        if (sesionDAO.actualizarSesion(sesionExistente)) {
-            return null; // Éxito
-        } else {
-            return "Error al actualizar la sesión";
+                           int cupoMaximo, LocalDate fecha,
+                           LocalTime horaInicio, LocalTime horaFin, String sede) {
+
+    ultimosNotificados = 0;
+
+    Sesion sesionExistente = sesionDAO.obtenerSesionPorId(sesionId);
+    if (sesionExistente == null) {
+        return "La sesión no existe";
+    }
+    if ("COMPLETADA".equals(sesionExistente.getEstado())) {
+        return "No es posible modificar una sesión ya finalizada";
+    }
+
+    // Copia del estado anterior (otra lectura a la BD, así no se ve afectada por los setters)
+    Sesion sesionAntes = sesionDAO.obtenerSesionPorId(sesionId);
+
+    sesionExistente.setAsignatura(asignatura);
+    sesionExistente.setTema(tema);
+    sesionExistente.setCupoMaximo(cupoMaximo);
+    sesionExistente.setFecha(fecha);
+    sesionExistente.setHoraInicio(horaInicio);
+    sesionExistente.setHoraFin(horaFin);
+    sesionExistente.setSede(sede);
+
+    if (sesionDAO.actualizarSesion(sesionExistente)) {
+        ultimosNotificados = notificacionService.notificarEdicion(sesionAntes, sesionExistente);
+        return null; // Éxito
+    } else {
+        return "Error al actualizar la sesión";
         }
     }
-    
     // HU-6: Cancelación de sesión
     public String cancelarSesion(int sesionId) {
-        Sesion sesion = sesionDAO.obtenerSesionPorId(sesionId);
-        
-        if (sesion == null) {
-            return "La sesión no existe";
-        }
-        
-        // Validación HU-6 CA3
-        if ("COMPLETADA".equals(sesion.getEstado())) {
-            return "No es posible modificar una sesión ya finalizada";
-        }
-        
-        if (sesionDAO.cancelarSesion(sesionId)) {
-            return null; // Éxito
-        } else {
-            return "Error al cancelar la sesión";
-        }
+    Sesion sesion = sesionDAO.obtenerSesionPorId(sesionId);
+    if (sesion == null) return "La sesión no existe";
+    if ("COMPLETADA".equals(sesion.getEstado()))
+        return "No es posible modificar una sesión ya finalizada";
+
+    if (sesionDAO.cancelarSesion(sesionId)) {
+        // ajusta el nombre del método al que tengas en NotificacionService
+        ultimosNotificados = notificacionService.notificarCancelacion(sesion);
+        return null;
+    }
+    return "Error al cancelar la sesión";
     }
     
     // HU-7: Búsqueda de sesiones
@@ -127,8 +126,9 @@ public class SesionService {
     
     // Validación auxiliar de sede
     private boolean validarSede(String sede, String modalidad) {
-        if ("VIRTUAL".equals(modalidad)) {
-            return sede != null && !sede.trim().isEmpty(); // Puede ser un enlace
+        // CAMBIO: Corregido a "Virtual" (coincide con el combo) y uso de equalsIgnoreCase
+        if ("Virtual".equalsIgnoreCase(modalidad)) {
+            return sede != null && !sede.trim().isEmpty(); // Puede ser un enlace o "Virtual"
         }
         
         // Sedes presenciales válidas
@@ -136,11 +136,25 @@ public class SesionService {
                "Casa Obando".equals(sede) || 
                "Encarnación".equals(sede);
     }
+    public void verificarYActualizarSesionesPasadas() {
+        sesionDAO.actualizarSesionesPasadas();
+        // Aquí se podría agregar lógica de notificación (ej. enviar correo o mostrar alerta)
+        System.out.println("Notificación HU-6: Se han procesado las sesiones pasadas.");
+    }
     public Sesion obtenerSesionPorId(int id) {
     return sesionDAO.obtenerSesionPorId(id);
     }
 
-public List<Sesion> obtenerTodasLasSesionesDisponibles() {
+    public List<Sesion> obtenerTodasLasSesionesDisponibles() {
     return sesionDAO.obtenerTodasLasSesionesDisponibles();
+    }
+    
+    public int getUltimosNotificados() {
+        return ultimosNotificados;
+    }
+
+    /** Cuántos estudiantes tienen reserva vigente en la sesión. */
+    public int contarEstudiantesConReserva(int sesionId) {
+        return notificacionService.contarEstudiantesConReserva(sesionId);
     }
 }

@@ -85,10 +85,10 @@ public class FrmCatalogoTutorias extends JFrame {
         panelPrincipal.add(panelFiltros, BorderLayout.NORTH);
         
         // Tabla de Resultados
-        String[] columnas = {"Asignatura", "Tema", "Tutor", "Fecha", "Hora", "Modalidad", "Sede", "Cupos Disp."};
+        String[] columnas = {"ID", "Asignatura", "Tema", "Tutor", "Fecha", "Hora", "Modalidad", "Sede", "Cupos Disp."};
         modeloTabla = new DefaultTableModel(columnas, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) { return false; }
+        @Override
+        public boolean isCellEditable(int row, int column) { return false; }
         };
         tblResultados = new JTable(modeloTabla);
         tblResultados.setFont(new Font("Segoe UI", Font.PLAIN, 12));

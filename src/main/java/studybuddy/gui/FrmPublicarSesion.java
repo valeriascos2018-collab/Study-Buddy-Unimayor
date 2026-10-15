@@ -105,7 +105,7 @@ public class FrmPublicarSesion extends JFrame {
         
         // Sede
         agregarLabel(panelFormulario, gbc, 0, 8, "Sede / Enlace:", labelFont);
-        cboSede = new JComboBox<>(new String[]{"Bicentenario", "Casa Obando", "Encarnación", "Enlace Virtual (Teams/Meet)"});
+        cboSede = new JComboBox<>(new String[]{"Bicentenario", "Casa Obando", "Encarnación", "Virtual"});
         agregarCampo(panelFormulario, gbc, 1, 8, cboSede, fieldFont, fieldBg);
         
         panelPrincipal.add(panelFormulario, BorderLayout.CENTER);

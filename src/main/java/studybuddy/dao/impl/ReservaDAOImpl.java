@@ -34,11 +34,43 @@ public class ReservaDAOImpl implements ReservaDAO {
             return false;
         }
     }
+    @Override
+    public List<Integer> obtenerEstudiantesConReservaActiva(int sesionId) {
+        List<Integer> ids = new ArrayList<>();
+        String sql = "SELECT DISTINCT estudiante_id FROM reservas "
+                   + "WHERE sesion_id = ? AND estado IN ('CONFIRMADA','PROGRAMADA')";
+        try (Connection conn = ConexionBD.getConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, sesionId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ids.add(rs.getInt(1));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return ids;
+    }
+
+    @Override
+    public int cancelarReservasDeSesion(int sesionId) {
+        String sql = "UPDATE reservas SET estado = 'CANCELADA' "
+                   + "WHERE sesion_id = ? AND estado IN ('CONFIRMADA','PROGRAMADA')";
+        try (Connection conn = ConexionBD.getConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, sesionId);
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
 
     @Override
     public List<Reserva> obtenerReservasPorSesion(int sesionId) {
         List<Reserva> reservas = new ArrayList<>();
-        String sql = "SELECT r.*, u.nombre as estudiante_nombre FROM reservas r " +
+        String sql = "SELECT r.*, u.nombre_completo as estudiante_nombre FROM reservas r " +
                      "JOIN usuarios u ON r.estudiante_id = u.id WHERE r.sesion_id = ?";
         try (Connection conn = ConexionBD.getConexion();
              PreparedStatement ps = conn.prepareStatement(sql);

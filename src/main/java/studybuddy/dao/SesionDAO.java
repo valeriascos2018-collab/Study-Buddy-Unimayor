@@ -16,4 +16,7 @@ public interface SesionDAO {
     List<Sesion> obtenerTodasLasSesionesDisponibles();
     List<Sesion> buscarSesiones(String asignatura, String sede, String modalidad);
     boolean verificarCruceHorario(int tutorId, String fecha, String horaInicio, String horaFin);
+    
+    // AGREGADO: Método para el job de HU-6 (Validación de sesiones pasadas)
+    void actualizarSesionesPasadas();
 }
