@@ -24,7 +24,7 @@ public class ReservaDAOImpl implements ReservaDAO {
             ps.setString(3, reserva.getEstado());
             int filas = ps.executeUpdate();
             if (filas > 0) {
-                try (ResultSet rs = ps.getGeneratedKeys()) {   // 👈 cerrado explícito
+                try (ResultSet rs = ps.getGeneratedKeys()) {   // cerrado explícito
                     if (rs.next()) reserva.setId(rs.getInt(1));
                 }
             }
@@ -99,7 +99,7 @@ public class ReservaDAOImpl implements ReservaDAO {
                      "((s.hora_inicio <= ? AND s.hora_fin >= ?) OR (s.hora_inicio <= ? AND s.hora_fin >= ?))";
         try (Connection conn = ConexionBD.getConexion();
              PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {               //
+             ResultSet rs = ps.executeQuery()) {               
             ps.setInt(1, estudianteId);
             ps.setDate(2, Date.valueOf(fecha));
             ps.setTime(3, Time.valueOf(horaFin));

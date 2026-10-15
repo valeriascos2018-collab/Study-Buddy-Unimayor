@@ -6,7 +6,7 @@ package studybuddy.dao.impl;
 
 import studybuddy.dao.SesionDAO;
 import studybuddy.model.Sesion;
-import studybuddy.config.ConexionBD; // Asegúrate de que esta ruta sea correcta
+import studybuddy.config.ConexionBD; 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,7 @@ public class SesionDAOImpl implements SesionDAO {
                      "tipo_sesion, modalidad, fecha, hora_inicio, hora_fin, sede, estado, tutor_id) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
-        // CORRECCIÓN: ConexionBD.getConexion() es estático, no necesita getInstancia()
+        // ConexionBD.getConexion() es estático, no necesita getInstancia()
         try (Connection conn = ConexionBD.getConexion();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             

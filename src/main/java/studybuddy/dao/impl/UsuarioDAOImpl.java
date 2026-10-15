@@ -13,21 +13,19 @@ import java.sql.*;
  */
 public class UsuarioDAOImpl implements UsuarioDAO {
     
-    // ✅ SE ELIMINÓ: private final Connection conexion;
-    // ✅ SE ELIMINÓ: El constructor public UsuarioDAOImpl()
-
+    
     @Override
     public void registrar(Usuario usuario) throws SQLException {
         String sql = "INSERT INTO usuarios (nombre_completo, correo, contraseña, facultad, programa_academico, rol) " +
                      "VALUES (?, ?, ?, ?, ?, ?)";
         
-        // ✅ La conexión se pide y se cierra (se devuelve al pool) automáticamente aquí
+        // La conexión se pide y se cierra (se devuelve al pool) automáticamente aquí
         try (Connection conn = ConexionBD.getConexion();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setString(1, usuario.getNombreCompleto());
             ps.setString(2, usuario.getCorreo());
-            ps.setString(3, usuario.getContraseña()); // En producción usar hash (ej. BCrypt)
+            ps.setString(3, usuario.getContraseña()); 
             ps.setString(4, usuario.getFacultad());
             ps.setString(5, usuario.getProgramaAcademico());
             ps.setString(6, usuario.getRol().name());

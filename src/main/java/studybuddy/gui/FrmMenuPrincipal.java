@@ -67,7 +67,7 @@ public class FrmMenuPrincipal extends JFrame {
         panelContenido.add(Box.createVerticalStrut(10));
 
         // --- Botón: Catálogo de tutorías ---
-        JButton btnCatalogo = crearBotonMenu("📚 Ver catálogo de tutorías", COLOR_PRIMARIO);
+        JButton btnCatalogo = crearBotonMenu(" Ver catálogo de tutorías", COLOR_PRIMARIO);
         btnCatalogo.addActionListener(e -> {
             FrmCatalogoTutorias v = new FrmCatalogoTutorias();
             ControllerFactory.crearCatalogoController(v, usuario);
@@ -80,7 +80,7 @@ public class FrmMenuPrincipal extends JFrame {
 
         // --- Botones exclusivos para Tutor/Monitor ---
         if (usuario.getRol() == Rol.TUTOR_MONITOR) {
-            JButton btnPublicar = crearBotonMenu("➕ Publicar sesión", new Color(40, 167, 69));
+            JButton btnPublicar = crearBotonMenu(" Publicar sesión", new Color(40, 167, 69));
             btnPublicar.addActionListener(e -> {
                 FrmPublicarSesion v = new FrmPublicarSesion();
                 ControllerFactory.crearPublicarSesionController(v, usuario.getId());
@@ -91,7 +91,7 @@ public class FrmMenuPrincipal extends JFrame {
             panelContenido.add(btnPublicar);
             panelContenido.add(Box.createVerticalStrut(15));
 
-            JButton btnMisSesiones = crearBotonMenu("📋 Mis sesiones", new Color(255, 165, 0));
+            JButton btnMisSesiones = crearBotonMenu(" Mis sesiones", new Color(255, 165, 0));
             btnMisSesiones.addActionListener(e -> {
                 FrmMisSesiones v = new FrmMisSesiones();
                 ControllerFactory.crearMisSesionesController(v, usuario);
@@ -107,8 +107,8 @@ public class FrmMenuPrincipal extends JFrame {
                 // --- Botón: Notificaciones (muestra cuántas hay sin leer) ---
         int sinLeer = ServiceFactory.crearBandejaNotificaciones().contarNoLeidas(usuario.getId());
         String textoNotificaciones = sinLeer > 0
-                ? "🔔 Notificaciones (" + sinLeer + " nuevas)"
-                : "🔔 Notificaciones";
+                ? " Notificaciones (" + sinLeer + " nuevas)"
+                : " Notificaciones";
         Color colorNotificaciones = sinLeer > 0 ? new Color(220, 53, 69) : new Color(23, 162, 184);
         JButton btnNotificaciones = crearBotonMenu(textoNotificaciones, colorNotificaciones);
         btnNotificaciones.addActionListener(e -> {
@@ -122,7 +122,7 @@ public class FrmMenuPrincipal extends JFrame {
         panelContenido.add(Box.createVerticalStrut(15));
 
         // --- Botón: Mi perfil ---
-        JButton btnPerfil = crearBotonMenu("👤 Mi perfil", new Color(108, 117, 125));
+        JButton btnPerfil = crearBotonMenu(" Mi perfil", new Color(108, 117, 125));
         btnPerfil.addActionListener(e -> {
             new FrmPerfil(usuario).setVisible(true);
             dispose();
