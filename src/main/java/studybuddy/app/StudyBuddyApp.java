@@ -10,7 +10,7 @@ import studybuddy.factory.AppFactory;
 public class StudyBuddyApp {
     
     public static void main(String[] args) {
-        // Ejecutar en el hilo de despacho de eventos de Swing (buena práctica)
+        // Ejecutar en el hilo de despacho de eventos de Swing 
         SwingUtilities.invokeLater(() -> {
             AppFactory.iniciarLogin();
         });

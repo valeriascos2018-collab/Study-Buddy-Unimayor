@@ -183,4 +183,31 @@ public class SesionService implements ISesionService {
     public int contarEstudiantesConReserva(int sesionId) {
         return notificador.contarEstudiantesConReserva(sesionId);
     }
+        @Override
+    public String marcarComoCompletada(int sesionId, int tutorId) {
+        Sesion sesion = sesionDAO.obtenerSesionPorId(sesionId);
+        
+        if (sesion == null) {
+            return "La sesión no existe";
+        }
+        
+        // Validar que el tutor sea el dueño de la sesión
+        if (sesion.getTutorId() != tutorId) {
+            return "No tienes permiso para modificar esta sesión";
+        }
+        
+        // Validar que no esté ya completada
+        if (sesion.estaCompletada()) {
+            return "La sesión ya está marcada como completada";
+        }
+        
+        // CORRECCIÓN: Usamos el String directamente para evitar problemas de importación del enum
+        sesion.setEstado("COMPLETADA");
+        
+        if (sesionDAO.actualizarSesion(sesion)) {
+            return null; // Éxito
+        } else {
+            return "Error al actualizar la sesión en la base de datos";
+        }
+    }
 }

@@ -43,5 +43,11 @@ public interface ISesionService {
     int getUltimosNotificados();
 
     int contarEstudiantesConReserva(int sesionId);
+    
+    /**
+ * Marca manualmente una sesión como completada.
+ * @return mensaje de error o null si todo salió bien
+ */
+    String marcarComoCompletada(int sesionId, int tutorId);
 }
 
