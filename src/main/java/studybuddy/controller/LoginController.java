@@ -14,13 +14,13 @@ public class LoginController {
     private final IAutenticacionService servicio;
     private final IValidadorUsuario validador;
     
-    // ✅ Constructor que coincide con tu ControllerFactory
+    //  Constructor que coincide con tu ControllerFactory
     public LoginController(FrmLogin vista, IAutenticacionService servicio, IValidadorUsuario validador) {
         this.vista = vista;
         this.servicio = servicio;
         this.validador = validador;
         
-        // ✅ 1. Escuchar el clic del botón de Login
+        // 1. Escuchar el clic del botón de Login
         this.vista.btnLogin.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -28,7 +28,7 @@ public class LoginController {
             }
         });
         
-        // ✅ 2. Escuchar el clic del botón de Registro (para abrir esa ventana)
+        //  2. Escuchar el clic del botón de Registro (para abrir esa ventana)
         this.vista.btnRegistro.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -57,13 +57,13 @@ public class LoginController {
     Usuario usuarioAutenticado = servicio.autenticar(correo, password);
     
     if (usuarioAutenticado != null) {
-        // ✅ ÉXITO: Mostrar mensaje
+        // ÉXITO: Mostrar mensaje
         JOptionPane.showMessageDialog(vista, 
             "¡Bienvenido, " + usuarioAutenticado.getNombreCompleto() , 
             "Éxito", 
             JOptionPane.INFORMATION_MESSAGE);
         
-        // 🚀 Pasar el usuario autenticado a FrmMenuPrincipal y mostrarlo
+        // ? Pasar el usuario autenticado a FrmMenuPrincipal y mostrarlo
         studybuddy.gui.FrmMenuPrincipal menu = new studybuddy.gui.FrmMenuPrincipal(usuarioAutenticado);
         menu.setVisible(true);
         
@@ -71,7 +71,7 @@ public class LoginController {
         vista.dispose(); 
         
     } else {
-        // ❌ FALLO: Credenciales incorrectas
+        //  FALLO: Credenciales incorrectas
         JOptionPane.showMessageDialog(vista, "Correo o contraseña incorrectos.", "Error de autenticación", JOptionPane.ERROR_MESSAGE);
         vista.txtPassword.setText(""); 
         vista.txtCorreo.requestFocus(); 

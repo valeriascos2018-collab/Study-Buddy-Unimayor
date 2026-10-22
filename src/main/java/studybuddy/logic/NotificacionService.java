@@ -37,11 +37,8 @@ public class NotificacionService implements INotificadorSesiones, IBandejaNotifi
         this.notificacionDAO = notificacionDAO;
         this.reservaDAO = reservaDAO;
     }
-
-    // ------------------------------------------------------------------
     // Envío (lo usa SesionService)
-    // ------------------------------------------------------------------
-
+    
     /**
      * Notifica la edición de una sesión. Solo avisa si cambió algo que le importa
      * al estudiante (asignatura, tema, modalidad, fecha, horario o sede).

@@ -72,7 +72,7 @@ public class NotificacionesController implements ActionListener {
 
         for (Notificacion n : notificaciones) {
             vista.modeloTabla.addRow(new Object[]{
-                n.isLeida() ? "Leída" : "● Nueva",
+                n.isLeida() ? "Leída" : " Nueva",
                 n.getFechaCreacion() != null ? n.getFechaCreacion().format(FORMATO) : "",
                 nombreDelTipo(n.getTipo()),
                 n.getMensaje()
