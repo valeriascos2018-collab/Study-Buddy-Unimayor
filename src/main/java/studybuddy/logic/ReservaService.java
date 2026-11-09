@@ -21,7 +21,7 @@ public class ReservaService implements IReservaService {
 
     /**
      * HU-8: Reserva un cupo en una sesión.
-     * HU-9: Valida que no haya cruce de horario.
+     * HU-9: Valida que no haya cruce de horario en las clases .
      */
     @Override
     public String reservarCupo(int estudianteId, int sesionId) {
