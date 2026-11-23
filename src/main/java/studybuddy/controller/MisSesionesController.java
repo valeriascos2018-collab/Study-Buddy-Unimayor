@@ -8,13 +8,15 @@ import studybuddy.model.Usuario;
 import studybuddy.gui.FrmMenuPrincipal;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
  * Controlador para la gestión de sesiones del tutor.
- * Maneja HU-6 (Edición, cancelación y finalización de sesiones).
+ * Maneja HU-6 (Edición y cancelación de sesiones).
  */
 public class MisSesionesController implements ActionListener {
     
@@ -31,7 +33,6 @@ public class MisSesionesController implements ActionListener {
         this.vista.btnEditar.addActionListener(this);
         this.vista.btnCancelar.addActionListener(this);
         this.vista.btnVolver.addActionListener(this);
-        this.vista.btnCompletar.addActionListener(this); // <-- NUEVO: Registrar el botón completar
         
         // Cargar sesiones al iniciar
         cargarSesiones();
@@ -43,8 +44,6 @@ public class MisSesionesController implements ActionListener {
             editarSesion();
         } else if (e.getSource() == vista.btnCancelar) {
             cancelarSesion();
-        } else if (e.getSource() == vista.btnCompletar) { // <-- NUEVO: Ruta para el botón completar
-            marcarComoCompletada();
         } else if (e.getSource() == vista.btnVolver) {
             volverAlMenu();
         }
@@ -84,31 +83,37 @@ public class MisSesionesController implements ActionListener {
         if (filaSeleccionada == -1) {
             JOptionPane.showMessageDialog(vista, 
                 "Debes seleccionar una sesión para editar", 
-                "Aviso", JOptionPane.WARNING_MESSAGE);
+                "Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
         
+        // Obtener ID de la sesión seleccionada
         int sesionId = (int) vista.modeloTabla.getValueAt(filaSeleccionada, 0);
         Sesion sesion = service.obtenerSesionPorId(sesionId);
         
         if (sesion == null) {
-            JOptionPane.showMessageDialog(vista, "No se pudo cargar la sesión", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(vista, 
+                "No se pudo cargar la sesión", 
+                "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
         
+        // HU-6 CA3: Validar que no sea sesión finalizada
         if (sesion.estaCompletada()) {
             JOptionPane.showMessageDialog(vista, 
                 "No es posible modificar una sesión ya finalizada", 
-                "Aviso", JOptionPane.WARNING_MESSAGE);
+                "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
         
+        // Abrir formulario de edición (debes crear FrmEditarSesion)
         FrmEditarSesion frmEditar = new FrmEditarSesion(sesion);
         frmEditar.setController(new EditarSesionController(frmEditar, service, tutor));
         frmEditar.setVisible(true);
         
-        // Nota: La recarga de la tabla debería hacerse cuando se cierre el FrmEditarSesion, 
-        // no inmediatamente aquí, para que refleje los cambios reales.
+        
+        // Recargar tabla después de editar
+        cargarSesiones();
     }
     
     /**
@@ -120,25 +125,30 @@ public class MisSesionesController implements ActionListener {
         if (filaSeleccionada == -1) {
             JOptionPane.showMessageDialog(vista, 
                 "Debes seleccionar una sesión para cancelar", 
-                "Aviso", JOptionPane.WARNING_MESSAGE);
+                "Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
         
+        // Obtener ID de la sesión seleccionada
         int sesionId = (int) vista.modeloTabla.getValueAt(filaSeleccionada, 0);
         Sesion sesion = service.obtenerSesionPorId(sesionId);
         
         if (sesion == null) {
-            JOptionPane.showMessageDialog(vista, "No se pudo cargar la sesión", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(vista, 
+                "No se pudo cargar la sesión", 
+                "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
         
+        // HU-6 CA3: Validar que no sea sesión finalizada
         if (sesion.estaCompletada()) {
             JOptionPane.showMessageDialog(vista, 
-                "No es posible cancelar una sesión ya finalizada", 
-                "Aviso", JOptionPane.WARNING_MESSAGE);
+                "No es posible modificar una sesión ya finalizada", 
+                "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
         
+        // Confirmar cancelación
         int confirmacion = JOptionPane.showConfirmDialog(vista, 
             "¿Estás seguro de cancelar la sesión de " + sesion.getAsignatura() + " del " + sesion.getFecha() + "?", 
             "Confirmar cancelación", 
@@ -148,60 +158,14 @@ public class MisSesionesController implements ActionListener {
             String error = service.cancelarSesion(sesionId);
             
             if (error == null) {
-                JOptionPane.showMessageDialog(vista, "Sesión cancelada exitosamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(vista, 
+                    "Sesión cancelada exitosamente", 
+                    "Éxito", JOptionPane.INFORMATION_MESSAGE);
                 cargarSesiones(); // Recargar tabla
             } else {
-                JOptionPane.showMessageDialog(vista, error, "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }
-
-    /**
-     * NUEVO: HU-6 - Marcar sesión como completada manualmente.
-     */
-    private void marcarComoCompletada() {
-        int filaSeleccionada = vista.tblSesiones.getSelectedRow();
-        
-        if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(vista, 
-                "Debes seleccionar una sesión para marcar como completada", 
-                "Aviso", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        
-        int sesionId = (int) vista.modeloTabla.getValueAt(filaSeleccionada, 0);
-        Sesion sesion = service.obtenerSesionPorId(sesionId);
-        
-        if (sesion == null) {
-            JOptionPane.showMessageDialog(vista, "No se pudo cargar la sesión", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        
-        // Validación de defensa: por si acaso ya estaba completada
-        if (sesion.estaCompletada()) {
-            JOptionPane.showMessageDialog(vista, 
-                "Esta sesión ya está marcada como completada", 
-                "Aviso", JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
-        
-        int confirmacion = JOptionPane.showConfirmDialog(vista, 
-            "¿Estás seguro de marcar la sesión de '" + sesion.getAsignatura() + "' como COMPLETADA?\n" +
-            "Esta acción indicará que la tutoría ya se llevó a cabo.", 
-            "Confirmar completado", 
-            JOptionPane.YES_NO_OPTION);
-        
-        if (confirmacion == JOptionPane.YES_OPTION) {
-            // Llamamos al servicio para ejecutar la regla de negocio
-            String error = service.marcarComoCompletada(sesionId, tutor.getId());
-            
-            if (error == null) {
                 JOptionPane.showMessageDialog(vista, 
-                    "Sesión marcada como completada exitosamente", 
-                    "Éxito", JOptionPane.INFORMATION_MESSAGE);
-                cargarSesiones(); // Recargar la tabla para reflejar el nuevo estado
-            } else {
-                JOptionPane.showMessageDialog(vista, error, "Error", JOptionPane.ERROR_MESSAGE);
+                    error, 
+                    "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -212,5 +176,6 @@ public class MisSesionesController implements ActionListener {
     private void volverAlMenu() {
         vista.dispose();
         new FrmMenuPrincipal(tutor).setVisible(true);
+        // new FrmMenuTutor(tutor).setVisible(true);
     }
 }
