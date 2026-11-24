@@ -27,7 +27,10 @@ import studybuddy.logic.ValidadorUsuario;
 import studybuddy.logic.IReporteService;
 import studybuddy.logic.ReporteService;
 import studybuddy.logic.TutoriasFacade;
-
+import studybuddy.logic.IValidadorUsuario;
+import studybuddy.logic.strategy.ValidadorEstudiante;
+import studybuddy.logic.strategy.ValidadorTutor;
+import studybuddy.logic.strategy.ValidadorAdministrador;
 /**
  * Raíz de composición de la capa lógica: es el ÚNICO lugar que conoce las clases
  * concretas (DAOImpl y servicios) y las conecta entre sí. Todo lo demás depende de interfaces.
@@ -69,6 +72,17 @@ public final class ServiceFactory {
     return new ReporteService(new SesionDAOImpl());
     }
     public static TutoriasFacade crearTutoriasFacade() {
-    return new TutoriasFacade(crearSesionService());
+        return new TutoriasFacade(crearSesionService());
+    }
+    public static IValidadorUsuario crearValidadorEstudiante() {
+        return new ValidadorEstudiante();
+    }
+
+    public static IValidadorUsuario crearValidadorTutor() {
+        return new ValidadorTutor();
+    }
+
+    public static IValidadorUsuario crearValidadorAdministrador() {
+        return new ValidadorAdministrador();
     }
 }
