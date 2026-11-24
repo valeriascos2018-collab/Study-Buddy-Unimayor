@@ -15,6 +15,7 @@ public class ConexionBD {
 
     // Constructor privado para evitar instanciación
     private ConexionBD() {}
+    
 
     public static synchronized HikariDataSource getDataSource() {
         if (dataSource == null) {

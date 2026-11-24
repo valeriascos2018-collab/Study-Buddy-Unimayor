@@ -26,6 +26,7 @@ import studybuddy.logic.SesionService;
 import studybuddy.logic.ValidadorUsuario;
 import studybuddy.logic.IReporteService;
 import studybuddy.logic.ReporteService;
+import studybuddy.logic.TutoriasFacade;
 
 /**
  * Raíz de composición de la capa lógica: es el ÚNICO lugar que conoce las clases
@@ -66,5 +67,8 @@ public final class ServiceFactory {
     }
     public static IReporteService crearReporteService() {
     return new ReporteService(new SesionDAOImpl());
+    }
+    public static TutoriasFacade crearTutoriasFacade() {
+    return new TutoriasFacade(crearSesionService());
     }
 }

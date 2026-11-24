@@ -9,10 +9,9 @@ import studybuddy.dao.ReservaDAO;
 import studybuddy.dao.SesionDAO;
 import studybuddy.model.Sede;
 import studybuddy.model.Sesion;
-import studybuddy.model.Reserva;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.LocalDateTime;
 import java.util.List;
 
 public class SesionService implements ISesionService {
@@ -54,6 +53,8 @@ public class SesionService implements ISesionService {
 
         if (asignatura == null || asignatura.trim().isEmpty()
                 || tema == null || tema.trim().isEmpty()
+                || tipoSesion == null || tipoSesion.trim().isEmpty()
+                || modalidad == null || modalidad.trim().isEmpty()
                 || cupoMaximo <= 0) {
 
             return "Debe completar todos los campos obligatorios";
@@ -80,18 +81,19 @@ public class SesionService implements ISesionService {
             return "Conflicto de horario: ya tienes una actividad programada en este horario";
         }
 
-        Sesion sesion = new Sesion(
-                asignatura,
-                tema,
-                cupoMaximo,
-                tipoSesion,
-                modalidad,
-                fecha,
-                horaInicio,
-                horaFin,
-                sede,
-                tutorId
-        );
+        // Crear sesión utilizando el patrón Builder.
+        Sesion sesion = new Sesion.Builder()
+                .conAsignatura(asignatura)
+                .conTema(tema)
+                .conCupoMaximo(cupoMaximo)
+                .conTipoSesion(tipoSesion)
+                .conModalidad(modalidad)
+                .conFecha(fecha)
+                .conHoraInicio(horaInicio)
+                .conHoraFin(horaFin)
+                .conSede(sede)
+                .conTutorId(tutorId)
+                .construir();
 
         if (sesionDAO.crearSesion(sesion)) {
             return null;
@@ -142,7 +144,13 @@ public class SesionService implements ISesionService {
             return "La hora de fin debe ser posterior a la hora de inicio";
         }
 
-        Sesion sesionAntes = sesionDAO.obtenerSesionPorId(sesionId);
+        if (!validarSede(sede, sesionExistente.getModalidad())) {
+            return "La sede seleccionada no es válida";
+        }
+
+        // Obtener los datos anteriores para las notificaciones.
+        Sesion sesionAntes =
+                sesionDAO.obtenerSesionPorId(sesionId);
 
         sesionExistente.setAsignatura(asignatura);
         sesionExistente.setTema(tema);
@@ -240,12 +248,11 @@ public class SesionService implements ISesionService {
 
     private boolean validarSede(String sede, String modalidad) {
 
-        if (modalidad == null) {
+        if (modalidad == null || modalidad.trim().isEmpty()) {
             return false;
         }
 
         if (MODALIDAD_VIRTUAL.equalsIgnoreCase(modalidad)) {
-
             return sede != null && !sede.trim().isEmpty();
         }
 
@@ -325,14 +332,12 @@ public class SesionService implements ISesionService {
             boolean asistio) throws Exception {
 
         /*
-         * PENDIENTE:
-         * Se debe implementar cuando se confirme:
-         * - El getter del ID de sesión en Reserva.
-         * - El setter del estado de asistencia en Reserva.
-         * - La forma de actualizar una reserva en ReservaDAO.
+         * Pendiente de implementar.
          *
-         * No se utilizan métodos inventados para evitar
-         * nuevos errores de compilación.
+         * Se necesita confirmar:
+         * 1. El getter del ID de sesión en Reserva.
+         * 2. El setter del estado de asistencia en Reserva.
+         * 3. El método de actualización de ReservaDAO.
          */
 
         throw new UnsupportedOperationException(
@@ -368,3 +373,4 @@ public class SesionService implements ISesionService {
         }
     }
 }
+
