@@ -126,4 +126,28 @@ public class ReservaDAOImpl implements ReservaDAO {
             return false;
         }
     }
+    @Override
+    public void actualizar(Reserva reserva) { /* UPDATE ... */ }
+    @Override
+    public Reserva obtenerPorId(int id) {
+    String sql = "SELECT * FROM reservas WHERE id = ?";
+
+    try (Connection conn = ConexionBD.getConexion();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setInt(1, id);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                // Aquí debes construir Reserva con los campos reales
+                // de tu modelo y de tu tabla.
+            }
+        }
+
+    } catch (SQLException e) {
+        System.err.println("Error al obtener reserva: " + e.getMessage());
+        }
+
+    return null;
+    }
 }

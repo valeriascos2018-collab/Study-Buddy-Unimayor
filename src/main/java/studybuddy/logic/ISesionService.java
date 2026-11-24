@@ -49,5 +49,8 @@ public interface ISesionService {
  * @return mensaje de error o null si todo salió bien
  */
     String marcarComoCompletada(int sesionId, int tutorId);
+    
+    void registrarAsistenciaEstudiante(int idReserva, boolean asistio) throws Exception;
+    void finalizarSesion(int idSesion) throws Exception;
 }
 

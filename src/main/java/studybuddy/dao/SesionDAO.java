@@ -6,6 +6,7 @@ package studybuddy.dao;
 
 import studybuddy.model.Sesion;
 import java.util.List;
+import java.time.LocalDateTime;
 
 public interface SesionDAO {
     boolean crearSesion(Sesion sesion);
@@ -19,4 +20,10 @@ public interface SesionDAO {
     
     // AGREGADO: Método para el job de HU-6 (Validación de sesiones pasadas)
     void actualizarSesionesPasadas();
+    // Para HU-9 (Solapamiento)
+    List<Sesion> buscarSesionesPorUsuarioYRango(int idUsuario, LocalDateTime inicio, LocalDateTime fin);
+
+// Para HU-11 (Reportes)
+    double calcularHorasCompletadas(int idTutor, LocalDateTime inicio, LocalDateTime fin);
+    int contarSesionesCompletadas(int idTutor, LocalDateTime inicio, LocalDateTime fin);
 }

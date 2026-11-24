@@ -24,6 +24,8 @@ import studybuddy.logic.PerfilService;
 import studybuddy.logic.ReservaService;
 import studybuddy.logic.SesionService;
 import studybuddy.logic.ValidadorUsuario;
+import studybuddy.logic.IReporteService;
+import studybuddy.logic.ReporteService;
 
 /**
  * Raíz de composición de la capa lógica: es el ÚNICO lugar que conoce las clases
@@ -61,5 +63,8 @@ public final class ServiceFactory {
 
     private static NotificacionService crearNotificacionService() {
         return new NotificacionService(new NotificacionDAOImpl(), new ReservaDAOImpl());
+    }
+    public static IReporteService crearReporteService() {
+    return new ReporteService(new SesionDAOImpl());
     }
 }

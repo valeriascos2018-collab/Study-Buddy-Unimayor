@@ -19,4 +19,7 @@ public interface ReservaDAO {
 
     /** Marca como CANCELADA todas las reservas vigentes de la sesión. Devuelve cuántas cambió. */
     int cancelarReservasDeSesion(int sesionId);
+    Reserva obtenerPorId(int idReserva);
+    void actualizar(Reserva reserva); // Para guardar el estado de asistencia
+    
 }
