@@ -4,8 +4,10 @@
  */
 
 package studybuddy.logic;
+
 import studybuddy.dao.ReservaDAO;
 import studybuddy.dao.SesionDAO;
+import studybuddy.model.Reserva;
 import studybuddy.model.Sede;
 import studybuddy.model.Sesion;
 
@@ -335,19 +337,28 @@ public class SesionService implements ISesionService {
 
     @Override
     public void registrarAsistenciaEstudiante(int idReserva, boolean asistio) throws Exception {
-        if (idReserva <= 0) throw new Exception("El identificador de reserva no es válido.");
-        studybuddy.model.Reserva reserva = reservaDAO.obtenerPorId(idReserva);
-        if (reserva == null) throw new Exception("La reserva no existe.");
+        if (idReserva <= 0) {
+            throw new Exception("El identificador de reserva no es válido.");
+        }
+        Reserva reserva = reservaDAO.obtenerPorId(idReserva);
+        if (reserva == null) {
+            throw new Exception("La reserva no existe.");
+        }
         Sesion sesion = sesionDAO.obtenerSesionPorId(reserva.getSesionId());
-        if (sesion == null) throw new Exception("La sesión asociada no existe.");
-        if (!sesion.estaCompletada())
+        if (sesion == null) {
+            throw new Exception("La sesión asociada no existe.");
+        }
+        if (!sesion.estaCompletada()) {
             throw new Exception("Solo se puede registrar asistencia cuando la sesión está COMPLETADA.");
+        }
         if (!"CONFIRMADA".equalsIgnoreCase(reserva.getEstado())
-                && !"PROGRAMADA".equalsIgnoreCase(reserva.getEstado()))
+                && !"PROGRAMADA".equalsIgnoreCase(reserva.getEstado())) {
             throw new Exception("La reserva ya fue procesada o está cancelada.");
+        }
         String nuevoEstado = asistio ? "ASISTIO" : "NO_ASISTIO";
-        if (!reservaDAO.actualizarEstado(idReserva, nuevoEstado))
+        if (!reservaDAO.actualizarEstado(idReserva, nuevoEstado)) {
             throw new Exception("No se pudo guardar la asistencia en MariaDB.");
+        }
     }
 
     // ==========================================
@@ -377,5 +388,9 @@ public class SesionService implements ISesionService {
             );
         }
     }
-}
 
+    @Override
+    public List<Reserva> obtenerAsistentes(int sesionId) {
+        return reservaDAO.obtenerReservasPorSesion(sesionId);
+    }
+}

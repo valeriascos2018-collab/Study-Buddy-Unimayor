@@ -17,6 +17,7 @@ import studybuddy.factory.ServiceFactory;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.plaf.basic.BasicScrollBarUI;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -94,17 +95,20 @@ public class FrmMenuPrincipal extends JFrame {
         panelPrincipal.add(panelHeader, BorderLayout.NORTH);
 
         // ==========================
-        // PANEL DE CONTENIDO (TARJETA CENTRADA)
+        // TARJETA CONTENEDORA
         // ==========================
-        JPanel panelContenido = new JPanel();
-        panelContenido.setLayout(new BoxLayout(panelContenido, BoxLayout.Y_AXIS));
-        panelContenido.setBackground(Color.WHITE);
-        panelContenido.setBorder(BorderFactory.createCompoundBorder(
+        JPanel panelTarjeta = new JPanel(new BorderLayout());
+        panelTarjeta.setBackground(Color.WHITE);
+        panelTarjeta.setBorder(BorderFactory.createCompoundBorder(
                 new LineBorder(BORDE_TARJETA, 1, true),
-                new EmptyBorder(26, 40, 26, 40)
+                new EmptyBorder(24, 24, 20, 24)
         ));
 
-        // Título y subtítulo centrados
+        // Cabecera fija dentro de la tarjeta
+        JPanel panelCabeceraTarjeta = new JPanel();
+        panelCabeceraTarjeta.setLayout(new BoxLayout(panelCabeceraTarjeta, BoxLayout.Y_AXIS));
+        panelCabeceraTarjeta.setBackground(Color.WHITE);
+
         JLabel lblMenu = new JLabel("Menú principal", SwingConstants.CENTER);
         lblMenu.setFont(new Font("Segoe UI", Font.BOLD, 21));
         lblMenu.setForeground(AZUL_OSCURO);
@@ -120,34 +124,38 @@ public class FrmMenuPrincipal extends JFrame {
         separador.setForeground(new Color(230, 235, 240));
         separador.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        panelContenido.add(lblMenu);
-        panelContenido.add(Box.createVerticalStrut(5));
-        panelContenido.add(lblIndicacion);
-        panelContenido.add(Box.createVerticalStrut(14));
-        panelContenido.add(separador);
-        panelContenido.add(Box.createVerticalStrut(22));
+        panelCabeceraTarjeta.add(lblMenu);
+        panelCabeceraTarjeta.add(Box.createVerticalStrut(5));
+        panelCabeceraTarjeta.add(lblIndicacion);
+        panelCabeceraTarjeta.add(Box.createVerticalStrut(14));
+        panelCabeceraTarjeta.add(separador);
+        panelCabeceraTarjeta.add(Box.createVerticalStrut(12));
+
+        panelTarjeta.add(panelCabeceraTarjeta, BorderLayout.NORTH);
 
         // ==========================
-        // CATÁLOGO DE TUTORÍAS
+        // PANEL DE BOTONES (DESPLAZABLE)
         // ==========================
+        JPanel panelBotones = new JPanel();
+        panelBotones.setLayout(new BoxLayout(panelBotones, BoxLayout.Y_AXIS));
+        panelBotones.setBackground(Color.WHITE);
+        panelBotones.setBorder(new EmptyBorder(8, 12, 8, 12));
+
+        // CATÁLOGO DE TUTORÍAS
         JButton btnCatalogo = crearBotonMenu(
                 "Ver catálogo de tutorías",
                 AZUL_BOTON,
                 crearIconoVectorial("catalogo", 18, Color.WHITE)
         );
-
         btnCatalogo.addActionListener(e -> {
             FrmCatalogoTutorias v = new FrmCatalogoTutorias();
             ControllerFactory.crearCatalogoController(v, usuario);
             v.setVisible(true);
             dispose();
         });
+        agregarBoton(panelBotones, btnCatalogo);
 
-        agregarBoton(panelContenido, btnCatalogo);
-
-        // ==========================
         // OPCIONES PARA TUTOR / MONITOR
-        // ==========================
         if (usuario.getRol() == Rol.TUTOR_MONITOR) {
 
             JButton btnPublicar = crearBotonMenu(
@@ -155,35 +163,29 @@ public class FrmMenuPrincipal extends JFrame {
                     VERDE,
                     crearIconoVectorial("publicar", 18, Color.WHITE)
             );
-
             btnPublicar.addActionListener(e -> {
                 FrmPublicarSesion v = new FrmPublicarSesion();
                 ControllerFactory.crearPublicarSesionController(v, usuario.getId());
                 v.setVisible(true);
                 dispose();
             });
-
-            agregarBoton(panelContenido, btnPublicar);
+            agregarBoton(panelBotones, btnPublicar);
 
             JButton btnMisSesiones = crearBotonMenu(
                     "Mis sesiones",
                     NARANJA,
                     crearIconoVectorial("sesiones", 18, Color.WHITE)
             );
-
             btnMisSesiones.addActionListener(e -> {
                 FrmMisSesiones v = new FrmMisSesiones();
                 ControllerFactory.crearMisSesionesController(v, usuario);
                 v.setVisible(true);
                 dispose();
             });
-
-            agregarBoton(panelContenido, btnMisSesiones);
+            agregarBoton(panelBotones, btnMisSesiones);
         }
 
-        // ==========================
         // NOTIFICACIONES
-        // ==========================
         int sinLeer = ServiceFactory
                 .crearBandejaNotificaciones()
                 .contarNoLeidas(usuario.getId());
@@ -199,33 +201,45 @@ public class FrmMenuPrincipal extends JFrame {
                 colorNotificaciones,
                 crearIconoVectorial("campana", 18, Color.WHITE)
         );
-
         btnNotificaciones.addActionListener(e -> {
             FrmNotificaciones v = new FrmNotificaciones();
             ControllerFactory.crearNotificacionesController(v, usuario);
             v.setVisible(true);
             dispose();
         });
+        agregarBoton(panelBotones, btnNotificaciones);
 
-        agregarBoton(panelContenido, btnNotificaciones);
-
-        // ==========================
         // MI PERFIL
-        // ==========================
         JButton btnPerfil = crearBotonMenu(
                 "Mi perfil",
                 GRIS,
                 crearIconoVectorial("usuario", 18, Color.WHITE)
         );
-
         btnPerfil.addActionListener(e -> {
             new FrmPerfil(usuario).setVisible(true);
             dispose();
         });
+        agregarBoton(panelBotones, btnPerfil);
 
-        agregarBoton(panelContenido, btnPerfil, false);
+        // REPORTE DE HORAS
+        JButton btnReporte = crearBotonMenu(
+                "Reporte de horas",
+                TEAL,
+                crearIconoVectorial("sesiones", 18, Color.WHITE)
+        );
+        btnReporte.addActionListener(e -> {
+            FrmReporteHoras v = new FrmReporteHoras(usuario.getRol() == Rol.ADMINISTRADOR);
+            ControllerFactory.crearReporteController(v, usuario);
+            v.setVisible(true);
+            dispose();
+        });
+        agregarBoton(panelBotones, btnReporte, false);
 
-        panelPrincipal.add(panelContenido, BorderLayout.CENTER);
+        // ScrollPane limpio y fluido
+        JScrollPane scrollMenu = crearScrollEstilizado(panelBotones);
+        panelTarjeta.add(scrollMenu, BorderLayout.CENTER);
+
+        panelPrincipal.add(panelTarjeta, BorderLayout.CENTER);
 
         // ==========================
         // PIE DE PÁGINA
@@ -241,6 +255,60 @@ public class FrmMenuPrincipal extends JFrame {
         panelPrincipal.add(panelFooter, BorderLayout.SOUTH);
 
         add(panelPrincipal);
+    }
+
+    private JScrollPane crearScrollEstilizado(JPanel contenido) {
+        JScrollPane scroll = new JScrollPane(contenido);
+        scroll.setBorder(null);
+        scroll.setBackground(Color.WHITE);
+        scroll.getViewport().setBackground(Color.WHITE);
+        scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+        JScrollBar verticalBar = scroll.getVerticalScrollBar();
+        verticalBar.setUnitIncrement(16);
+        verticalBar.setPreferredSize(new Dimension(8, 0));
+        verticalBar.setBackground(Color.WHITE);
+        verticalBar.setUI(new BasicScrollBarUI() {
+            @Override
+            protected void configureScrollBarColors() {
+                this.thumbColor = new Color(195, 205, 218);
+                this.thumbHighlightColor = new Color(160, 175, 192);
+                this.trackColor = Color.WHITE;
+            }
+
+            @Override
+            protected JButton createDecreaseButton(int orientation) {
+                return crearBotonCero();
+            }
+
+            @Override
+            protected JButton createIncreaseButton(int orientation) {
+                return crearBotonCero();
+            }
+
+            @Override
+            protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
+                if (thumbBounds.isEmpty() || !scrollbar.isEnabled()) {
+                    return;
+                }
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(isDragging ? AZUL_BOTON : thumbColor);
+                g2.fillRoundRect(thumbBounds.x + 1, thumbBounds.y + 2, thumbBounds.width - 2, thumbBounds.height - 4, 8, 8);
+                g2.dispose();
+            }
+
+            private JButton crearBotonCero() {
+                JButton btn = new JButton();
+                btn.setPreferredSize(new Dimension(0, 0));
+                btn.setMinimumSize(new Dimension(0, 0));
+                btn.setMaximumSize(new Dimension(0, 0));
+                return btn;
+            }
+        });
+
+        return scroll;
     }
 
     private void agregarBoton(JPanel panel, JButton boton) {

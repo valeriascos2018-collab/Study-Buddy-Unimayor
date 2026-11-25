@@ -2,6 +2,7 @@ package studybuddy.dao;
 
 import studybuddy.model.Usuario;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Interfaz DAO para operaciones CRUD de usuarios.
@@ -41,4 +42,5 @@ public interface UsuarioDAO {
     
     
     Usuario autenticar(String correo, String contraseña) throws SQLException;
+    List<Usuario> obtenerTutores();
 }

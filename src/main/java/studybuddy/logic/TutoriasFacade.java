@@ -9,7 +9,9 @@ package studybuddy.logic;
  * @author yoban
  */
 
+import studybuddy.model.Reserva;
 import studybuddy.model.Sesion;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -91,7 +93,6 @@ public class TutoriasFacade {
     // ==========================================
 
     public String cancelarTutoria(int sesionId) {
-
         return sesionService.cancelarSesion(sesionId);
     }
 
@@ -112,17 +113,14 @@ public class TutoriasFacade {
     }
 
     public List<Sesion> obtenerTutoriasPorTutor(int tutorId) {
-
         return sesionService.obtenerSesionesPorTutor(tutorId);
     }
 
     public Sesion obtenerTutoriaPorId(int id) {
-
         return sesionService.obtenerSesionPorId(id);
     }
 
     public List<Sesion> obtenerTutoriasDisponibles() {
-
         return sesionService.obtenerTodasLasSesionesDisponibles();
     }
 
@@ -141,7 +139,6 @@ public class TutoriasFacade {
     }
 
     public void finalizarTutoria(int sesionId) throws Exception {
-
         sesionService.finalizarSesion(sesionId);
     }
 
@@ -159,17 +156,19 @@ public class TutoriasFacade {
         );
     }
 
+    public List<Reserva> obtenerAsistentes(int sesionId) {
+        return sesionService.obtenerAsistentes(sesionId);
+    }
+
     // ==========================================
     // NOTIFICACIONES
     // ==========================================
 
     public int obtenerUltimosNotificados() {
-
         return sesionService.getUltimosNotificados();
     }
 
     public int contarEstudiantesReservados(int sesionId) {
-
         return sesionService.contarEstudiantesConReserva(sesionId);
     }
 
@@ -178,8 +177,6 @@ public class TutoriasFacade {
     // ==========================================
 
     public void actualizarTutoriasPasadas() {
-
         sesionService.verificarYActualizarSesionesPasadas();
     }
 }
-

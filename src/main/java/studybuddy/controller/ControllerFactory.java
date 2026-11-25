@@ -4,7 +4,6 @@
  */
 package studybuddy.controller;
 
-
 import studybuddy.factory.ServiceFactory;
 import studybuddy.gui.FrmCatalogoTutorias;
 import studybuddy.gui.FrmLogin;
@@ -13,6 +12,7 @@ import studybuddy.gui.FrmNotificaciones;
 import studybuddy.gui.FrmPerfil;
 import studybuddy.gui.FrmPublicarSesion;
 import studybuddy.gui.FrmRegistro;
+import studybuddy.gui.FrmReporteHoras;
 import studybuddy.logic.TutoriasFacade;
 import studybuddy.model.Usuario;
 
@@ -119,6 +119,21 @@ public class ControllerFactory {
                 vista,
                 usuario,
                 ServiceFactory.crearBandejaNotificaciones()
+        );
+    }
+
+    // ==========================================
+    // REPORTE DE HORAS
+    // ==========================================
+
+    public static ReporteController crearReporteController(
+            FrmReporteHoras vista,
+            Usuario usuario) {
+
+        return new ReporteController(
+                vista,
+                ServiceFactory.crearReporteService(),
+                usuario
         );
     }
 }

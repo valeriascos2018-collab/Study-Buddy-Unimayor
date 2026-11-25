@@ -5,45 +5,49 @@ import studybuddy.dao.UsuarioDAO;
 import studybuddy.model.Rol;
 import studybuddy.model.Usuario;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Implementación concreta del DAO de Usuario usando JDBC.
  * Maneja sentencias preparadas para prevenir SQL Injection.
  */
 public class UsuarioDAOImpl implements UsuarioDAO {
-    
-    
+
     @Override
     public void registrar(Usuario usuario) throws SQLException {
-        String sql = "INSERT INTO usuarios (nombre_completo, correo, contraseña, facultad, programa_academico, rol) " +
-                     "VALUES (?, ?, ?, ?, ?, ?)";
-        
+        String sql = "INSERT INTO usuarios (nombre_completo, correo, contraseña, facultad, programa_academico, rol) "
+                   + "VALUES (?, ?, ?, ?, ?, ?)";
+
         // La conexión se pide y se cierra (se devuelve al pool) automáticamente aquí
         try (Connection conn = ConexionBD.getConexion();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            
+
             ps.setString(1, usuario.getNombreCompleto());
             ps.setString(2, usuario.getCorreo());
-            ps.setString(3, usuario.getContraseña()); 
+            ps.setString(3, usuario.getContraseña());
             ps.setString(4, usuario.getFacultad());
             ps.setString(5, usuario.getProgramaAcademico());
             ps.setString(6, usuario.getRol().name());
-            
+
             ps.executeUpdate();
         }
     }
-    
+
     @Override
     public Usuario obtenerPorCorreo(String correo) throws SQLException {
-        String sql = "SELECT id, nombre_completo, correo, contraseña, facultad, programa_academico, rol " +
-                     "FROM usuarios WHERE correo = ?";
-        
+        String sql = "SELECT id, nombre_completo, correo, contraseña, facultad, programa_academico, rol "
+                   + "FROM usuarios WHERE correo = ?";
+
         try (Connection conn = ConexionBD.getConexion();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            
+
             ps.setString(1, correo);
-            
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return mapearResultSet(rs);
@@ -52,34 +56,34 @@ public class UsuarioDAOImpl implements UsuarioDAO {
         }
         return null;
     }
-    
+
     @Override
     public void actualizarPerfil(Usuario usuario) throws SQLException {
-         String sql = "UPDATE usuarios SET nombre_completo=?, facultad=?, programa_academico=?, rol=? " +
-                     "WHERE id=?";
-        
+        String sql = "UPDATE usuarios SET nombre_completo=?, facultad=?, programa_academico=?, rol=? "
+                   + "WHERE id=?";
+
         try (Connection conn = ConexionBD.getConexion();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            
+
             ps.setString(1, usuario.getNombreCompleto());
             ps.setString(2, usuario.getFacultad());
             ps.setString(3, usuario.getProgramaAcademico());
-            ps.setString(4, usuario.getRol().name()); // UPDATE del rol
+            ps.setString(4, usuario.getRol().name());
             ps.setInt(5, usuario.getId());
-            
+
             ps.executeUpdate();
-        }    
+        }
     }
-    
+
     @Override
     public boolean existeCorreo(String correo) throws SQLException {
         String sql = "SELECT COUNT(*) FROM usuarios WHERE correo = ?";
-        
+
         try (Connection conn = ConexionBD.getConexion();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            
+
             ps.setString(1, correo);
-            
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1) > 0;
@@ -88,39 +92,59 @@ public class UsuarioDAOImpl implements UsuarioDAO {
         }
         return false;
     }
-    
+
     /**
      * Método auxiliar para mapear ResultSet a objeto Usuario.
      */
     private Usuario mapearResultSet(ResultSet rs) throws SQLException {
         return new Usuario(
-            rs.getInt("id"),
-            rs.getString("nombre_completo"),
-            rs.getString("correo"),
-            rs.getString("contraseña"),
-            rs.getString("facultad"),
-            rs.getString("programa_academico"),
-            Rol.valueOf(rs.getString("rol"))
+                rs.getInt("id"),
+                rs.getString("nombre_completo"),
+                rs.getString("correo"),
+                rs.getString("contraseña"),
+                rs.getString("facultad"),
+                rs.getString("programa_academico"),
+                Rol.valueOf(rs.getString("rol"))
         );
     }
-    
+
     @Override
     public Usuario autenticar(String correo, String contraseña) throws SQLException {
-        String sql = "SELECT id, nombre_completo, correo, contraseña, facultad, programa_academico, telefono, rol, activo " +
-                 "FROM usuarios WHERE correo = ? AND contraseña = ? AND activo = 1";
-    
+        String sql = "SELECT id, nombre_completo, correo, contraseña, facultad, programa_academico, telefono, rol, activo "
+                   + "FROM usuarios WHERE correo = ? AND contraseña = ? AND activo = 1";
+
         try (Connection conn = ConexionBD.getConexion();
-            PreparedStatement ps = conn.prepareStatement(sql)) {
-        
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, correo);
             ps.setString(2, contraseña);
-        
-        try (ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                return mapearResultSet(rs);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapearResultSet(rs);
+                }
             }
         }
+        return null;
     }
-    return null; // Retorna null si no encuentra coincidencia
+
+    @Override
+    public List<Usuario> obtenerTutores() {
+        List<Usuario> tutores = new ArrayList<>();
+        String sql = "SELECT id, nombre_completo, correo, contraseña, facultad, programa_academico, rol "
+                   + "FROM usuarios WHERE rol = 'TUTOR_MONITOR' ORDER BY nombre_completo";
+
+        try (Connection conn = ConexionBD.getConexion();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                tutores.add(mapearResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return tutores;
     }
 }
+

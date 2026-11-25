@@ -52,5 +52,6 @@ public interface ISesionService {
     
     void registrarAsistenciaEstudiante(int idReserva, boolean asistio) throws Exception;
     void finalizarSesion(int idSesion) throws Exception;
+    java.util.List<studybuddy.model.Reserva> obtenerAsistentes(int sesionId);
 }
 
