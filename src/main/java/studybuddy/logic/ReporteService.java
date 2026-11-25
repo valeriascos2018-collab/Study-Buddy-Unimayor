@@ -23,18 +23,21 @@ public class ReporteService implements IReporteService {
 
     @Override
     public Map<String, Object> generarReporteHoras(int idTutor, LocalDateTime fechaInicio, LocalDateTime fechaFin) throws SQLException {
-        // HU-11 Escenario 1 y 2: Consultar sesiones COMPLETADAS en el rango
+        if (idTutor <= 0 || fechaInicio == null || fechaFin == null || fechaFin.isBefore(fechaInicio)) {
+            throw new SQLException("El tutor y el rango de fechas deben ser válidos.");
+        }
+        // HU-11: consultar únicamente sesiones COMPLETADAS en el rango solicitado.
         double totalHoras = sesionDAO.calcularHorasCompletadas(idTutor, fechaInicio, fechaFin);
         int totalSesiones = sesionDAO.contarSesionesCompletadas(idTutor, fechaInicio, fechaFin);
-
-        if (totalSesiones == 0) {
-            // El controlador/GUI deberá manejar este caso para mostrar el mensaje de "Sin datos"
-            throw new SQLException("No hay datos de horas impartidas en el periodo seleccionado.");
-        }
+        int asistencias = sesionDAO.contarAsistencias(idTutor, fechaInicio, fechaFin, "ASISTIO");
+        int inasistencias = sesionDAO.contarAsistencias(idTutor, fechaInicio, fechaFin, "NO_ASISTIO");
 
         Map<String, Object> reporte = new HashMap<>();
         reporte.put("totalHoras", totalHoras);
         reporte.put("totalSesiones", totalSesiones);
+        reporte.put("sinDatos", totalSesiones == 0);
+        reporte.put("totalAsistencias", asistencias);
+        reporte.put("totalInasistencias", inasistencias);
         reporte.put("fechaInicio", fechaInicio);
         reporte.put("fechaFin", fechaFin);
         

@@ -7,9 +7,13 @@ import java.sql.SQLException;
 
 public class ConexionBD {
 
-    private static final String URL = "jdbc:mysql://localhost:3306/studybuddy_unimayor?useSSL=false&serverTimezone=UTC";
-    private static final String USUARIO = "root";
-    private static final String PASSWORD = ""; // ⚠️ Ver Paso 5 para mejorar esto
+    // Puede sobrescribirse con variables de entorno sin modificar el código.
+    private static final String URL = System.getenv().getOrDefault(
+            "STUDYBUDDY_DB_URL",
+            "jdbc:mariadb://localhost:3306/studybuddy_unimayor"
+    );
+    private static final String USUARIO = System.getenv().getOrDefault("STUDYBUDDY_DB_USER", "root");
+    private static final String PASSWORD = System.getenv().getOrDefault("STUDYBUDDY_DB_PASSWORD", "");
 
     private static HikariDataSource dataSource;
 
@@ -21,6 +25,7 @@ public class ConexionBD {
         if (dataSource == null) {
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl(URL);
+            config.setDriverClassName("org.mariadb.jdbc.Driver");
             config.setUsername(USUARIO);
             config.setPassword(PASSWORD);
             config.setMaximumPoolSize(10);

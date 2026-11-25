@@ -26,4 +26,5 @@ public interface SesionDAO {
 // Para HU-11 (Reportes)
     double calcularHorasCompletadas(int idTutor, LocalDateTime inicio, LocalDateTime fin);
     int contarSesionesCompletadas(int idTutor, LocalDateTime inicio, LocalDateTime fin);
+    int contarAsistencias(int idTutor, LocalDateTime inicio, LocalDateTime fin, String estadoReserva);
 }

@@ -4,7 +4,6 @@
  */
 
 package studybuddy.logic;
-
 import studybuddy.dao.ReservaDAO;
 import studybuddy.dao.SesionDAO;
 import studybuddy.model.Sede;
@@ -62,6 +61,10 @@ public class SesionService implements ISesionService {
 
         if (fecha == null || horaInicio == null || horaFin == null) {
             return "Debe seleccionar una fecha y un horario válido";
+        }
+
+        if (fecha.isBefore(LocalDate.now())) {
+            return "No se puede publicar una sesión en una fecha pasada";
         }
 
         if (!horaFin.isAfter(horaInicio)) {
@@ -138,6 +141,10 @@ public class SesionService implements ISesionService {
                 || horaFin == null) {
 
             return "Los datos ingresados no son válidos";
+        }
+
+        if (fecha.isBefore(LocalDate.now())) {
+            return "No se puede programar una sesión en una fecha pasada";
         }
 
         if (!horaFin.isAfter(horaInicio)) {
@@ -327,22 +334,20 @@ public class SesionService implements ISesionService {
     // ==========================================
 
     @Override
-    public void registrarAsistenciaEstudiante(
-            int idReserva,
-            boolean asistio) throws Exception {
-
-        /*
-         * Pendiente de implementar.
-         *
-         * Se necesita confirmar:
-         * 1. El getter del ID de sesión en Reserva.
-         * 2. El setter del estado de asistencia en Reserva.
-         * 3. El método de actualización de ReservaDAO.
-         */
-
-        throw new UnsupportedOperationException(
-                "Pendiente de adaptar a la clase Reserva"
-        );
+    public void registrarAsistenciaEstudiante(int idReserva, boolean asistio) throws Exception {
+        if (idReserva <= 0) throw new Exception("El identificador de reserva no es válido.");
+        studybuddy.model.Reserva reserva = reservaDAO.obtenerPorId(idReserva);
+        if (reserva == null) throw new Exception("La reserva no existe.");
+        Sesion sesion = sesionDAO.obtenerSesionPorId(reserva.getSesionId());
+        if (sesion == null) throw new Exception("La sesión asociada no existe.");
+        if (!sesion.estaCompletada())
+            throw new Exception("Solo se puede registrar asistencia cuando la sesión está COMPLETADA.");
+        if (!"CONFIRMADA".equalsIgnoreCase(reserva.getEstado())
+                && !"PROGRAMADA".equalsIgnoreCase(reserva.getEstado()))
+            throw new Exception("La reserva ya fue procesada o está cancelada.");
+        String nuevoEstado = asistio ? "ASISTIO" : "NO_ASISTIO";
+        if (!reservaDAO.actualizarEstado(idReserva, nuevoEstado))
+            throw new Exception("No se pudo guardar la asistencia en MariaDB.");
     }
 
     // ==========================================

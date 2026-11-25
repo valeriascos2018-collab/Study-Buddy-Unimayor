@@ -304,7 +304,7 @@ public class SesionDAOImpl implements SesionDAO {
         String sql = "UPDATE sesiones " +
                 "SET estado='COMPLETADA' " +
                 "WHERE estado='PROGRAMADA' " +
-                "AND fecha < CURRENT_DATE";
+                "AND TIMESTAMP(fecha, hora_fin) < CURRENT_TIMESTAMP";
 
         try (Connection conn = ConexionBD.getConexion();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -360,7 +360,7 @@ public class SesionDAOImpl implements SesionDAO {
             System.err.println("Error al verificar horario: " + e.getMessage());
         }
 
-        return false;
+        return true; // Si falla la validación, no permitir publicar una sesión potencialmente solapada.
     }
 
     // ==========================================
@@ -414,13 +414,9 @@ public class SesionDAOImpl implements SesionDAO {
             LocalDateTime inicio,
             LocalDateTime fin) {
 
-        String sql = "SELECT COALESCE(" +
-                "SUM(EXTRACT(EPOCH FROM (hora_fin - hora_inicio)) / 3600.0), 0) " +
-                "FROM sesiones " +
-                "WHERE tutor_id=? " +
-                "AND estado='COMPLETADA' " +
-                "AND (fecha + hora_inicio) >= ? " +
-                "AND (fecha + hora_inicio) <= ?";
+        String sql = "SELECT COALESCE(SUM(TIME_TO_SEC(TIMEDIFF(hora_fin, hora_inicio)) / 3600.0), 0) " +
+                "FROM sesiones WHERE tutor_id=? AND estado='COMPLETADA' " +
+                "AND TIMESTAMP(fecha, hora_inicio) >= ? AND TIMESTAMP(fecha, hora_inicio) <= ?";
 
         try (Connection conn = ConexionBD.getConexion();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -453,12 +449,8 @@ public class SesionDAOImpl implements SesionDAO {
             LocalDateTime inicio,
             LocalDateTime fin) {
 
-        String sql = "SELECT COUNT(*) " +
-                "FROM sesiones " +
-                "WHERE tutor_id=? " +
-                "AND estado='COMPLETADA' " +
-                "AND (fecha + hora_inicio) >= ? " +
-                "AND (fecha + hora_inicio) <= ?";
+        String sql = "SELECT COUNT(*) FROM sesiones WHERE tutor_id=? AND estado='COMPLETADA' " +
+                "AND TIMESTAMP(fecha, hora_inicio) >= ? AND TIMESTAMP(fecha, hora_inicio) <= ?";
 
         try (Connection conn = ConexionBD.getConexion();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -479,6 +471,27 @@ public class SesionDAOImpl implements SesionDAO {
         }
 
         return 0;
+    }
+
+
+    /** HU-11: totaliza las reservas con estado de asistencia dentro de sesiones completadas. */
+    @Override
+    public int contarAsistencias(int idTutor, LocalDateTime inicio, LocalDateTime fin, String estadoReserva) {
+        if (!"ASISTIO".equals(estadoReserva) && !"NO_ASISTIO".equals(estadoReserva)) {
+            throw new IllegalArgumentException("Estado de asistencia no permitido.");
+        }
+        String sql = "SELECT COUNT(*) FROM reservas r JOIN sesiones s ON s.id=r.sesion_id "
+                + "WHERE s.tutor_id=? AND s.estado='COMPLETADA' AND r.estado=? "
+                + "AND TIMESTAMP(s.fecha,s.hora_inicio)>=? AND TIMESTAMP(s.fecha,s.hora_inicio)<=?";
+        try (Connection conn = ConexionBD.getConexion(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idTutor);
+            ps.setString(2, estadoReserva);
+            ps.setTimestamp(3, Timestamp.valueOf(inicio));
+            ps.setTimestamp(4, Timestamp.valueOf(fin));
+            try (ResultSet rs = ps.executeQuery()) { return rs.next() ? rs.getInt(1) : 0; }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Error al consultar asistencias: " + e.getMessage(), e);
+        }
     }
 
     // ==========================================
@@ -520,3 +533,4 @@ public class SesionDAOImpl implements SesionDAO {
         return sesion;
     }
 }
+

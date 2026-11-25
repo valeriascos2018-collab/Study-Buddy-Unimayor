@@ -14,23 +14,80 @@ import java.sql.Connection;
 
 public class ReservaDAOImpl implements ReservaDAO {
 
+    /** HU-8: inserta la reserva y descuenta el cupo en una única transacción. */
     @Override
     public boolean crearReserva(Reserva reserva) {
-        String sql = "INSERT INTO reservas (estudiante_id, sesion_id, estado) VALUES (?, ?, ?)";
-        try (Connection conn = ConexionBD.getConexion();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setInt(1, reserva.getEstudianteId());
-            ps.setInt(2, reserva.getSesionId());
-            ps.setString(3, reserva.getEstado());
-            int filas = ps.executeUpdate();
-            if (filas > 0) {
-                try (ResultSet rs = ps.getGeneratedKeys()) {   // cerrado explícito
-                    if (rs.next()) reserva.setId(rs.getInt(1));
+        final String bloquear = "SELECT cupos_disponibles, estado, fecha, hora_inicio, hora_fin "
+                + "FROM sesiones WHERE id = ? FOR UPDATE";
+        final String cruce = "SELECT COUNT(*) FROM reservas r "
+                + "JOIN sesiones s ON s.id = r.sesion_id "
+                + "WHERE r.estudiante_id = ? AND r.estado IN ('CONFIRMADA','PROGRAMADA') "
+                + "AND s.estado = 'PROGRAMADA' AND s.fecha = ? "
+                + "AND s.hora_inicio < ? AND s.hora_fin > ?";
+        final String insertar = "INSERT INTO reservas (estudiante_id, sesion_id, estado) VALUES (?, ?, 'CONFIRMADA')";
+        final String descontar = "UPDATE sesiones SET cupos_disponibles = cupos_disponibles - 1 "
+                + "WHERE id = ? AND cupos_disponibles > 0 AND estado = 'PROGRAMADA'";
+        try (Connection conn = ConexionBD.getConexion()) {
+            conn.setAutoCommit(false);
+            try {
+                int cupos;
+                Date fecha;
+                Time inicio, fin;
+                try (PreparedStatement ps = conn.prepareStatement(bloquear)) {
+                    ps.setInt(1, reserva.getSesionId());
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (!rs.next()) throw new SQLException("La sesión no existe.");
+                        cupos = rs.getInt("cupos_disponibles");
+                        if (!"PROGRAMADA".equalsIgnoreCase(rs.getString("estado")))
+                            throw new SQLException("La sesión no está disponible para reservas.");
+                        if (cupos <= 0) throw new SQLException("No hay cupos disponibles.");
+                        fecha = rs.getDate("fecha");
+                        inicio = rs.getTime("hora_inicio");
+                        fin = rs.getTime("hora_fin");
+                    }
                 }
+                if (fecha.toLocalDate().isBefore(java.time.LocalDate.now()))
+                    throw new SQLException("No se puede reservar una sesión cuya fecha ya pasó.");
+                // Serializa las reservas del mismo estudiante incluso si intenta dos sesiones distintas.
+                try (PreparedStatement ps = conn.prepareStatement("SELECT id FROM usuarios WHERE id = ? FOR UPDATE")) {
+                    ps.setInt(1, reserva.getEstudianteId());
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (!rs.next()) throw new SQLException("El estudiante no existe.");
+                    }
+                }
+                try (PreparedStatement ps = conn.prepareStatement(cruce)) {
+                    ps.setInt(1, reserva.getEstudianteId());
+                    ps.setDate(2, fecha);
+                    ps.setTime(3, fin);
+                    ps.setTime(4, inicio);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next() && rs.getInt(1) > 0)
+                            throw new SQLException("El estudiante ya tiene una reserva en ese horario.");
+                    }
+                }
+                try (PreparedStatement ps = conn.prepareStatement(insertar, Statement.RETURN_GENERATED_KEYS)) {
+                    ps.setInt(1, reserva.getEstudianteId());
+                    ps.setInt(2, reserva.getSesionId());
+                    ps.executeUpdate();
+                    try (ResultSet keys = ps.getGeneratedKeys()) {
+                        if (keys.next()) reserva.setId(keys.getInt(1));
+                    }
+                }
+                try (PreparedStatement ps = conn.prepareStatement(descontar)) {
+                    ps.setInt(1, reserva.getSesionId());
+                    if (ps.executeUpdate() != 1) throw new SQLException("No fue posible descontar el cupo.");
+                }
+                conn.commit();
+                return true;
+            } catch (SQLException | RuntimeException ex) {
+                try { conn.rollback(); } catch (SQLException rollbackEx) { ex.addSuppressed(rollbackEx); }
+                System.err.println("No se pudo crear la reserva: " + ex.getMessage());
+                return false;
+            } finally {
+                try { conn.setAutoCommit(true); } catch (SQLException ignored) { }
             }
-            return filas > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error de conexión al reservar: " + e.getMessage());
             return false;
         }
     }
@@ -73,9 +130,9 @@ public class ReservaDAOImpl implements ReservaDAO {
         String sql = "SELECT r.*, u.nombre_completo as estudiante_nombre FROM reservas r " +
                      "JOIN usuarios u ON r.estudiante_id = u.id WHERE r.sesion_id = ?";
         try (Connection conn = ConexionBD.getConexion();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {               // 👈 antes faltaba cerrarlo
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, sesionId);
+            try (ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Reserva r = new Reserva();
                 r.setId(rs.getInt("id"));
@@ -84,6 +141,7 @@ public class ReservaDAOImpl implements ReservaDAO {
                 r.setSesionId(rs.getInt("sesion_id"));
                 r.setEstado(rs.getString("estado"));
                 reservas.add(r);
+            }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -94,23 +152,20 @@ public class ReservaDAOImpl implements ReservaDAO {
     @Override
     public boolean verificarCruceHorarioEstudiante(int estudianteId, String fecha,
                                                    String horaInicio, String horaFin) {
-        String sql = "SELECT COUNT(*) FROM reservas r JOIN sesiones s ON r.sesion_id = s.id " +
-                     "WHERE r.estudiante_id = ? AND s.fecha = ? AND s.estado = 'PROGRAMADA' AND " +
-                     "((s.hora_inicio <= ? AND s.hora_fin >= ?) OR (s.hora_inicio <= ? AND s.hora_fin >= ?))";
-        try (Connection conn = ConexionBD.getConexion();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {               
+        String sql = "SELECT COUNT(*) FROM reservas r JOIN sesiones s ON r.sesion_id = s.id "
+                + "WHERE r.estudiante_id = ? AND r.estado IN ('CONFIRMADA','PROGRAMADA') "
+                + "AND s.fecha = ? AND s.estado = 'PROGRAMADA' "
+                + "AND s.hora_inicio < ? AND s.hora_fin > ?";
+        try (Connection conn = ConexionBD.getConexion(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, estudianteId);
             ps.setDate(2, Date.valueOf(fecha));
             ps.setTime(3, Time.valueOf(horaFin));
             ps.setTime(4, Time.valueOf(horaInicio));
-            ps.setTime(5, Time.valueOf(horaInicio));
-            ps.setTime(6, Time.valueOf(horaFin));
-            return rs.next() && rs.getInt(1) > 0;
+            try (ResultSet rs = ps.executeQuery()) { return rs.next() && rs.getInt(1) > 0; }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error al verificar cruce de horario: " + e.getMessage());
+            return true; // Fallar de forma segura: no permitir reserva si no se pudo validar.
         }
-        return false;
     }
 
     @Override
@@ -127,7 +182,18 @@ public class ReservaDAOImpl implements ReservaDAO {
         }
     }
     @Override
-    public void actualizar(Reserva reserva) { /* UPDATE ... */ }
+    public void actualizar(Reserva reserva) {
+        String sql = "UPDATE reservas SET estudiante_id=?, sesion_id=?, estado=? WHERE id=?";
+        try (Connection conn = ConexionBD.getConexion(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, reserva.getEstudianteId());
+            ps.setInt(2, reserva.getSesionId());
+            ps.setString(3, reserva.getEstado());
+            ps.setInt(4, reserva.getId());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new IllegalStateException("No se pudo actualizar la reserva: " + e.getMessage(), e);
+        }
+    }
     @Override
     public Reserva obtenerPorId(int id) {
     String sql = "SELECT * FROM reservas WHERE id = ?";
@@ -139,8 +205,12 @@ public class ReservaDAOImpl implements ReservaDAO {
 
         try (ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
-                // Aquí debes construir Reserva con los campos reales
-                // de tu modelo y de tu tabla.
+                Reserva reserva = new Reserva();
+                reserva.setId(rs.getInt("id"));
+                reserva.setEstudianteId(rs.getInt("estudiante_id"));
+                reserva.setSesionId(rs.getInt("sesion_id"));
+                reserva.setEstado(rs.getString("estado"));
+                return reserva;
             }
         }
 

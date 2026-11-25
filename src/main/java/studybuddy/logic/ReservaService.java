@@ -25,45 +25,20 @@ public class ReservaService implements IReservaService {
      */
     @Override
     public String reservarCupo(int estudianteId, int sesionId) {
+        if (estudianteId <= 0 || sesionId <= 0) return "El estudiante y la sesión deben ser válidos.";
         Sesion sesion = sesionDAO.obtenerSesionPorId(sesionId);
-
-        if (sesion == null) {
-            return "La sesión no existe.";
-        }
-
-        if (!sesion.estaProgramada()) {
-            return "La sesión no está disponible para reservas.";
-        }
-
-        if (sesion.getCuposDisponibles() <= 0) {
-            return "No hay cupos disponibles para esta sesión.";
-        }
-
-        // HU-9: Validar cruce de horario del estudiante
-        boolean hayCruce = reservaDAO.verificarCruceHorarioEstudiante(
-            estudianteId,
-            sesion.getFecha().toString(),
-            sesion.getHoraInicio().toString(),
-            sesion.getHoraFin().toString()
-        );
-
-        if (hayCruce) {
-            return "Conflicto de horario: ya tienes una reserva en este horario.";
-        }
-
-        // Crear la reserva
+        if (sesion == null) return "La sesión no existe.";
+        if (!sesion.estaProgramada()) return "La sesión no está disponible para reservas.";
+        if (sesion.getFecha() == null || sesion.getFecha().isBefore(java.time.LocalDate.now()))
+            return "No se puede reservar una sesión cuya fecha ya pasó.";
+        if (sesion.getHoraInicio() == null || sesion.getHoraFin() == null
+                || !sesion.getHoraFin().isAfter(sesion.getHoraInicio()))
+            return "El horario de la sesión no es válido.";
         Reserva reserva = new Reserva();
         reserva.setEstudianteId(estudianteId);
         reserva.setSesionId(sesionId);
         reserva.setEstado("CONFIRMADA");
-
-        if (reservaDAO.crearReserva(reserva)) {
-            // Actualizar cupos disponibles en la sesión
-            sesion.setCuposDisponibles(sesion.getCuposDisponibles() - 1);
-            sesionDAO.actualizarSesion(sesion);
-            return null; // Éxito
-        } else {
-            return "Error al procesar la reserva.";
-        }
+        if (reservaDAO.crearReserva(reserva)) return null;
+        return "No se pudo completar la reserva. Verifica los cupos, el horario y que no exista otra reserva.";
     }
 }

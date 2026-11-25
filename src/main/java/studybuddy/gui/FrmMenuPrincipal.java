@@ -9,244 +9,136 @@ package studybuddy.gui;
  * @author yoban
  */
 
-
 import studybuddy.model.Rol;
 import studybuddy.model.Usuario;
 import studybuddy.controller.ControllerFactory;
 import studybuddy.factory.ServiceFactory;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.geom.Path2D;
 
 public class FrmMenuPrincipal extends JFrame {
 
     // ==========================
     // COLORES INSTITUCIONALES
     // ==========================
-
-    private static final Color AZUL_OSCURO =
-            new Color(7, 52, 94);
-
-    private static final Color AZUL_BOTON =
-            new Color(0, 105, 190);
-
-    private static final Color VERDE =
-            new Color(34, 153, 87);
-
-    private static final Color NARANJA =
-            new Color(214, 138, 22);
-
-    private static final Color ROJO =
-            new Color(200, 61, 77);
-
-    private static final Color GRIS =
-            new Color(104, 119, 137);
-
-    private static final Color FONDO =
-            new Color(241, 244, 248);
+    private static final Color AZUL_OSCURO = new Color(7, 52, 94);
+    private static final Color AZUL_BOTON = new Color(0, 105, 190);
+    private static final Color VERDE = new Color(34, 153, 87);
+    private static final Color NARANJA = new Color(214, 138, 22);
+    private static final Color ROJO = new Color(200, 61, 77);
+    private static final Color TEAL = new Color(23, 145, 165);
+    private static final Color GRIS = new Color(104, 119, 137);
+    private static final Color FONDO = new Color(241, 244, 248);
+    private static final Color BORDE_TARJETA = new Color(215, 221, 228);
 
     public FrmMenuPrincipal(Usuario usuario) {
 
         setTitle("StudyBuddy Unimayor - Menú principal");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(650, 720);
+        setSize(640, 720);
+        setMinimumSize(new Dimension(560, 650));
         setLocationRelativeTo(null);
         setResizable(false);
 
         // ==========================
         // PANEL PRINCIPAL
         // ==========================
-
-        JPanel panelPrincipal = new JPanel(
-                new BorderLayout(0, 18)
-        );
-
+        JPanel panelPrincipal = new JPanel(new BorderLayout(0, 18));
         panelPrincipal.setBackground(FONDO);
-
-        panelPrincipal.setBorder(
-                BorderFactory.createEmptyBorder(
-                        25, 30, 20, 30
-                )
-        );
+        panelPrincipal.setBorder(new EmptyBorder(24, 30, 20, 30));
 
         // ==========================
         // ENCABEZADO
         // ==========================
-
-        JPanel panelHeader = new JPanel(
-                new BorderLayout(15, 5)
-        );
-
+        JPanel panelHeader = new JPanel(new BorderLayout(18, 0));
         panelHeader.setBackground(AZUL_OSCURO);
+        panelHeader.setBorder(new EmptyBorder(22, 26, 22, 26));
 
-        panelHeader.setBorder(
-                BorderFactory.createEmptyBorder(
-                        25, 25, 25, 25
-                )
-        );
+        JLabel lblIcono = new JLabel(crearIconoVectorial("birrete", 44, Color.WHITE));
+        lblIcono.setVerticalAlignment(SwingConstants.CENTER);
 
         JPanel panelTextos = new JPanel();
-
         panelTextos.setOpaque(false);
+        panelTextos.setLayout(new BoxLayout(panelTextos, BoxLayout.Y_AXIS));
 
-        panelTextos.setLayout(
-                new BoxLayout(
-                        panelTextos,
-                        BoxLayout.Y_AXIS
-                )
-        );
-
-        JLabel lblTitulo = new JLabel(
-                "StudyBuddy Unimayor"
-        );
-
-        lblTitulo.setFont(
-                new Font("Arial", Font.BOLD, 27)
-        );
-
+        JLabel lblTitulo = new JLabel("StudyBuddy Unimayor");
+        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 25));
         lblTitulo.setForeground(Color.WHITE);
+        lblTitulo.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel lblSaludo = new JLabel(
-                "¡Hola, " + usuario.getNombreCompleto() + "!"
-        );
+        JLabel lblSaludo = new JLabel("¡Hola, " + usuario.getNombreCompleto() + "!");
+        lblSaludo.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        lblSaludo.setForeground(new Color(225, 237, 250));
+        lblSaludo.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        lblSaludo.setFont(
-                new Font("Arial", Font.PLAIN, 17)
-        );
-
-        lblSaludo.setForeground(
-                new Color(215, 229, 244)
-        );
-
-        JLabel lblDescripcion = new JLabel(
-                "Tu espacio de acompañamiento académico"
-        );
-
-        lblDescripcion.setFont(
-                new Font("Arial", Font.PLAIN, 14)
-        );
-
-        lblDescripcion.setForeground(
-                new Color(215, 229, 244)
-        );
+        JLabel lblDescripcion = new JLabel("Tu espacio de acompañamiento académico");
+        lblDescripcion.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblDescripcion.setForeground(new Color(185, 208, 234));
+        lblDescripcion.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         panelTextos.add(lblTitulo);
-        panelTextos.add(Box.createVerticalStrut(10));
-        panelTextos.add(lblSaludo);
         panelTextos.add(Box.createVerticalStrut(6));
+        panelTextos.add(lblSaludo);
+        panelTextos.add(Box.createVerticalStrut(3));
         panelTextos.add(lblDescripcion);
 
-        JLabel lblIcono = new JLabel("\uD83C\uDF93");
+        panelHeader.add(lblIcono, BorderLayout.WEST);
+        panelHeader.add(panelTextos, BorderLayout.CENTER);
 
-        lblIcono.setFont(
-                new Font("Segoe UI Emoji", Font.PLAIN, 42)
-        );
-
-        lblIcono.setForeground(Color.WHITE);
-
-        panelHeader.add(
-                lblIcono,
-                BorderLayout.WEST
-        );
-
-        panelHeader.add(
-                panelTextos,
-                BorderLayout.CENTER
-        );
-
-        panelPrincipal.add(
-                panelHeader,
-                BorderLayout.NORTH
-        );
+        panelPrincipal.add(panelHeader, BorderLayout.NORTH);
 
         // ==========================
-        // PANEL DE CONTENIDO
+        // PANEL DE CONTENIDO (TARJETA CENTRADA)
         // ==========================
-
         JPanel panelContenido = new JPanel();
-
-        panelContenido.setLayout(
-                new BoxLayout(
-                        panelContenido,
-                        BoxLayout.Y_AXIS
-                )
-        );
-
+        panelContenido.setLayout(new BoxLayout(panelContenido, BoxLayout.Y_AXIS));
         panelContenido.setBackground(Color.WHITE);
+        panelContenido.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(BORDE_TARJETA, 1, true),
+                new EmptyBorder(26, 40, 26, 40)
+        ));
 
-        panelContenido.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(
-                                new Color(215, 221, 228)
-                        ),
-                        BorderFactory.createEmptyBorder(
-                                25, 35, 25, 35
-                        )
-                )
-        );
-
-        // Título del menú
-
-        JLabel lblMenu = new JLabel(
-                "Menú principal"
-        );
-
-        lblMenu.setFont(
-                new Font("Arial", Font.BOLD, 19)
-        );
-
+        // Título y subtítulo centrados
+        JLabel lblMenu = new JLabel("Menú principal", SwingConstants.CENTER);
+        lblMenu.setFont(new Font("Segoe UI", Font.BOLD, 21));
         lblMenu.setForeground(AZUL_OSCURO);
+        lblMenu.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        lblMenu.setAlignmentX(
-                Component.LEFT_ALIGNMENT
-        );
+        JLabel lblIndicacion = new JLabel("Selecciona una opción para continuar", SwingConstants.CENTER);
+        lblIndicacion.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblIndicacion.setForeground(new Color(100, 115, 130));
+        lblIndicacion.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JSeparator separador = new JSeparator();
+        separador.setMaximumSize(new Dimension(440, 1));
+        separador.setForeground(new Color(230, 235, 240));
+        separador.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         panelContenido.add(lblMenu);
-
-        panelContenido.add(
-                Box.createVerticalStrut(5)
-        );
-
-        JLabel lblIndicacion = new JLabel(
-                "Selecciona una opción para continuar"
-        );
-
-        lblIndicacion.setFont(
-                new Font("Arial", Font.PLAIN, 13)
-        );
-
-        lblIndicacion.setForeground(
-                new Color(100, 115, 130)
-        );
-
-        lblIndicacion.setAlignmentX(
-                Component.LEFT_ALIGNMENT
-        );
-
+        panelContenido.add(Box.createVerticalStrut(5));
         panelContenido.add(lblIndicacion);
-
-        panelContenido.add(
-                Box.createVerticalStrut(25)
-        );
+        panelContenido.add(Box.createVerticalStrut(14));
+        panelContenido.add(separador);
+        panelContenido.add(Box.createVerticalStrut(22));
 
         // ==========================
         // CATÁLOGO DE TUTORÍAS
         // ==========================
-
         JButton btnCatalogo = crearBotonMenu(
-                "  Ver catálogo de tutorías",
-                AZUL_BOTON
+                "Ver catálogo de tutorías",
+                AZUL_BOTON,
+                crearIconoVectorial("catalogo", 18, Color.WHITE)
         );
 
         btnCatalogo.addActionListener(e -> {
-
-            FrmCatalogoTutorias v =
-                    new FrmCatalogoTutorias();
-
-            ControllerFactory.crearCatalogoController(
-                    v, usuario
-            );
-
+            FrmCatalogoTutorias v = new FrmCatalogoTutorias();
+            ControllerFactory.crearCatalogoController(v, usuario);
             v.setVisible(true);
             dispose();
         });
@@ -256,47 +148,32 @@ public class FrmMenuPrincipal extends JFrame {
         // ==========================
         // OPCIONES PARA TUTOR / MONITOR
         // ==========================
-
         if (usuario.getRol() == Rol.TUTOR_MONITOR) {
 
-            // Publicar sesión
-
             JButton btnPublicar = crearBotonMenu(
-                    "  Publicar sesión",
-                    VERDE
+                    "Publicar sesión",
+                    VERDE,
+                    crearIconoVectorial("publicar", 18, Color.WHITE)
             );
 
             btnPublicar.addActionListener(e -> {
-
-                FrmPublicarSesion v =
-                        new FrmPublicarSesion();
-
-                ControllerFactory.crearPublicarSesionController(
-                        v, usuario.getId()
-                );
-
+                FrmPublicarSesion v = new FrmPublicarSesion();
+                ControllerFactory.crearPublicarSesionController(v, usuario.getId());
                 v.setVisible(true);
                 dispose();
             });
 
             agregarBoton(panelContenido, btnPublicar);
 
-            // Mis sesiones
-
             JButton btnMisSesiones = crearBotonMenu(
-                    "  Mis sesiones",
-                    NARANJA
+                    "Mis sesiones",
+                    NARANJA,
+                    crearIconoVectorial("sesiones", 18, Color.WHITE)
             );
 
             btnMisSesiones.addActionListener(e -> {
-
-                FrmMisSesiones v =
-                        new FrmMisSesiones();
-
-                ControllerFactory.crearMisSesionesController(
-                        v, usuario
-                );
-
+                FrmMisSesiones v = new FrmMisSesiones();
+                ControllerFactory.crearMisSesionesController(v, usuario);
                 v.setVisible(true);
                 dispose();
             });
@@ -307,33 +184,25 @@ public class FrmMenuPrincipal extends JFrame {
         // ==========================
         // NOTIFICACIONES
         // ==========================
-
         int sinLeer = ServiceFactory
                 .crearBandejaNotificaciones()
                 .contarNoLeidas(usuario.getId());
 
         String textoNotificaciones = sinLeer > 0
-                ? "  Notificaciones (" + sinLeer + " nuevas)"
-                : "  Notificaciones";
+                ? "Notificaciones (" + sinLeer + " nuevas)"
+                : "Notificaciones";
 
-        Color colorNotificaciones = sinLeer > 0
-                ? ROJO
-                : new Color(23, 145, 165);
+        Color colorNotificaciones = sinLeer > 0 ? ROJO : TEAL;
 
         JButton btnNotificaciones = crearBotonMenu(
                 textoNotificaciones,
-                colorNotificaciones
+                colorNotificaciones,
+                crearIconoVectorial("campana", 18, Color.WHITE)
         );
 
         btnNotificaciones.addActionListener(e -> {
-
-            FrmNotificaciones v =
-                    new FrmNotificaciones();
-
-            ControllerFactory.crearNotificacionesController(
-                    v, usuario
-            );
-
+            FrmNotificaciones v = new FrmNotificaciones();
+            ControllerFactory.crearNotificacionesController(v, usuario);
             v.setVisible(true);
             dispose();
         });
@@ -343,141 +212,147 @@ public class FrmMenuPrincipal extends JFrame {
         // ==========================
         // MI PERFIL
         // ==========================
-
         JButton btnPerfil = crearBotonMenu(
-                "  Mi perfil",
-                GRIS
+                "Mi perfil",
+                GRIS,
+                crearIconoVectorial("usuario", 18, Color.WHITE)
         );
 
         btnPerfil.addActionListener(e -> {
-
             new FrmPerfil(usuario).setVisible(true);
             dispose();
         });
 
-        agregarBoton(panelContenido, btnPerfil);
+        agregarBoton(panelContenido, btnPerfil, false);
 
-        panelPrincipal.add(
-                panelContenido,
-                BorderLayout.CENTER
-        );
+        panelPrincipal.add(panelContenido, BorderLayout.CENTER);
 
         // ==========================
         // PIE DE PÁGINA
         // ==========================
-
-        JPanel panelFooter = new JPanel(
-                new FlowLayout(FlowLayout.CENTER)
-        );
-
+        JPanel panelFooter = new JPanel(new FlowLayout(FlowLayout.CENTER));
         panelFooter.setBackground(FONDO);
 
-        JLabel lblFooter = new JLabel(
-                "StudyBuddy Unimayor | Acompañamiento académico"
-        );
-
-        lblFooter.setFont(
-                new Font("Arial", Font.PLAIN, 12)
-        );
-
-        lblFooter.setForeground(
-                new Color(110, 125, 140)
-        );
+        JLabel lblFooter = new JLabel("StudyBuddy Unimayor | Acompañamiento académico");
+        lblFooter.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblFooter.setForeground(new Color(110, 125, 140));
 
         panelFooter.add(lblFooter);
-
-        panelPrincipal.add(
-                panelFooter,
-                BorderLayout.SOUTH
-        );
+        panelPrincipal.add(panelFooter, BorderLayout.SOUTH);
 
         add(panelPrincipal);
     }
 
-    /**
-     * Agrega un botón al panel manteniendo
-     * la misma separación y alineación.
-     */
-    private void agregarBoton(
-            JPanel panel,
-            JButton boton
-    ) {
-
-        boton.setAlignmentX(
-                Component.CENTER_ALIGNMENT
-        );
-
-        panel.add(boton);
-
-        panel.add(
-                Box.createVerticalStrut(15)
-        );
+    private void agregarBoton(JPanel panel, JButton boton) {
+        agregarBoton(panel, boton, true);
     }
 
-    /**
-     * Crea los botones del menú con estilo institucional.
-     * Conserva el efecto hover original.
-     */
-    private JButton crearBotonMenu(
-            String texto,
-            Color colorFondo
-    ) {
+    private void agregarBoton(JPanel panel, JButton boton, boolean conEspacioInferior) {
+        boton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panel.add(boton);
+        if (conEspacioInferior) {
+            panel.add(Box.createVerticalStrut(14));
+        }
+    }
 
-        JButton boton = new JButton(texto);
-
-        boton.setFont(
-                new Font("Arial", Font.BOLD, 15)
-        );
-
+    private JButton crearBotonMenu(String texto, Color colorFondo, Icon icono) {
+        JButton boton = new JButton(texto, icono);
+        boton.setFont(new Font("Segoe UI", Font.BOLD, 15));
         boton.setBackground(colorFondo);
         boton.setForeground(Color.WHITE);
-
+        boton.setIconTextGap(12);
         boton.setFocusPainted(false);
         boton.setBorderPainted(false);
         boton.setOpaque(true);
 
-        boton.setPreferredSize(
-                new Dimension(430, 48)
-        );
+        Dimension dim = new Dimension(440, 48);
+        boton.setPreferredSize(dim);
+        boton.setMinimumSize(dim);
+        boton.setMaximumSize(dim);
+        boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        boton.setMinimumSize(
-                new Dimension(430, 48)
-        );
-
-        boton.setMaximumSize(
-                new Dimension(430, 48)
-        );
-
-        boton.setCursor(
-                new Cursor(Cursor.HAND_CURSOR)
-        );
-
-        // Efecto hover
-
-        boton.addMouseListener(
-                new java.awt.event.MouseAdapter() {
-
+        boton.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseEntered(
-                    java.awt.event.MouseEvent evt
-            ) {
-
-                boton.setBackground(
-                        colorFondo.darker()
-                );
+            public void mouseEntered(MouseEvent evt) {
+                boton.setBackground(colorFondo.darker());
             }
 
             @Override
-            public void mouseExited(
-                    java.awt.event.MouseEvent evt
-            ) {
-
-                boton.setBackground(
-                        colorFondo
-                );
+            public void mouseExited(MouseEvent evt) {
+                boton.setBackground(colorFondo);
             }
         });
 
         return boton;
+    }
+
+    private Icon crearIconoVectorial(String tipo, int size, Color color) {
+        return new Icon() {
+            @Override
+            public void paintIcon(Component c, Graphics g, int x, int y) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(color);
+                g2.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                g2.translate(x, y);
+
+                switch (tipo) {
+                    case "birrete": {
+                        Path2D gorro = new Path2D.Double();
+                        gorro.moveTo(size * 0.5, size * 0.16);
+                        gorro.lineTo(size * 0.94, size * 0.38);
+                        gorro.lineTo(size * 0.5, size * 0.60);
+                        gorro.lineTo(size * 0.06, size * 0.38);
+                        gorro.closePath();
+                        g2.fill(gorro);
+                        g2.drawArc((int) (size * 0.22), (int) (size * 0.44), (int) (size * 0.56), (int) (size * 0.34), 180, 180);
+                        g2.drawLine((int) (size * 0.89), (int) (size * 0.40), (int) (size * 0.89), (int) (size * 0.72));
+                        break;
+                    }
+                    case "catalogo": {
+                        g2.drawRoundRect(2, 2, size - 5, size - 4, 3, 3);
+                        g2.drawLine(6, 6, size - 6, 6);
+                        g2.drawLine(6, 10, size - 6, 10);
+                        g2.drawLine(6, 14, size - 9, 14);
+                        break;
+                    }
+                    case "publicar": {
+                        g2.drawOval(2, 2, size - 4, size - 4);
+                        int mid = size / 2;
+                        g2.drawLine(mid, 5, mid, size - 5);
+                        g2.drawLine(5, mid, size - 5, mid);
+                        break;
+                    }
+                    case "sesiones": {
+                        g2.drawRoundRect(2, 4, size - 4, size - 6, 3, 3);
+                        g2.drawLine(2, 8, size - 2, 8);
+                        g2.drawLine(6, 2, 6, 5);
+                        g2.drawLine(size - 6, 2, size - 6, 5);
+                        break;
+                    }
+                    case "campana": {
+                        g2.drawArc(4, 3, size - 8, size - 7, 0, 180);
+                        g2.drawLine(4, 8, 3, size - 5);
+                        g2.drawLine(size - 4, 8, size - 3, size - 5);
+                        g2.drawLine(2, size - 5, size - 2, size - 5);
+                        g2.drawArc(size / 2 - 2, size - 5, 4, 3, 180, 180);
+                        break;
+                    }
+                    case "usuario": {
+                        int head = (int) (size * 0.36);
+                        g2.drawOval((size - head) / 2, 2, head, head);
+                        g2.drawArc(3, (int) (size * 0.48), size - 6, (int) (size * 0.55), 0, 180);
+                        break;
+                    }
+                }
+                g2.dispose();
+            }
+
+            @Override
+            public int getIconWidth() { return size; }
+
+            @Override
+            public int getIconHeight() { return size; }
+        };
     }
 }
