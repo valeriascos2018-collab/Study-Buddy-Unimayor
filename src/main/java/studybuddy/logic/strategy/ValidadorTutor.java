@@ -19,9 +19,10 @@ public class ValidadorTutor implements IValidadorUsuario {
         return correo != null && correo.trim().toLowerCase().endsWith(DOMINIO);
     }
 
+    
     @Override
     public boolean validarCamposNoVacios(String... campos) {
-        if (campos == null || campos.length < 5) {
+        if (campos == null || campos.length == 0) {
             return false;
         }
         for (String campo : campos) {

@@ -8,6 +8,9 @@ package studybuddy.logic;
  *
  * @author yoban
  */
+
+import studybuddy.logic.adapter.EmailAdapter;
+import studybuddy.logic.adapter.INotificacionAdapter;
 import studybuddy.dao.NotificacionDAO;
 import studybuddy.dao.ReservaDAO;
 import studybuddy.model.Notificacion;
@@ -22,36 +25,42 @@ import java.util.Objects;
 
 /**
  * HU-6: avisa a los estudiantes con reserva cuando el tutor
- * modifica o cancela una sesión.
+ * modifica o cancela una sesión (en bandeja interna y vía Adapter externo).
  */
 public class NotificacionService implements INotificadorSesiones, IBandejaNotificaciones {
 
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter FORMATO_HORA = DateTimeFormatter.ofPattern("HH:mm");
-    private static final int LARGO_MAXIMO_MENSAJE = 500; // igual que la columna de la base de datos
+    private static final int LARGO_MAXIMO_MENSAJE = 500;
 
     private final NotificacionDAO notificacionDAO;
     private final ReservaDAO reservaDAO;
+    private final INotificacionAdapter notificacionAdapter;
 
+    // Constructor original (mantiene compatibilidad)
     public NotificacionService(NotificacionDAO notificacionDAO, ReservaDAO reservaDAO) {
+        this(notificacionDAO, reservaDAO, new EmailAdapter());
+    }
+
+    // Constructor con inyección explícita del Adapter
+    public NotificacionService(
+            NotificacionDAO notificacionDAO,
+            ReservaDAO reservaDAO,
+            INotificacionAdapter notificacionAdapter) {
         this.notificacionDAO = notificacionDAO;
         this.reservaDAO = reservaDAO;
+        this.notificacionAdapter = notificacionAdapter;
     }
+
+    // ------------------------------------------------------------------
     // Envío (lo usa SesionService)
-    
-    /**
-     * Notifica la edición de una sesión. Solo avisa si cambió algo que le importa
-     * al estudiante (asignatura, tema, modalidad, fecha, horario o sede).
-     *
-     * @param antes   la sesión tal como estaba antes de editar
-     * @param despues la sesión ya con los cambios guardados
-     * @return cuántos estudiantes fueron notificados
-     */
+    // ------------------------------------------------------------------
+
     @Override
     public int notificarEdicion(Sesion antes, Sesion despues) {
         String cambios = describirCambios(antes, despues);
         if (cambios.isEmpty()) {
-            return 0; // por ejemplo, solo cambió el cupo: el estudiante no necesita aviso
+            return 0;
         }
 
         String tutor = nombreTutor(despues);
@@ -62,13 +71,6 @@ public class NotificacionService implements INotificadorSesiones, IBandejaNotifi
         return enviarAReservasActivas(despues.getId(), Notificacion.TIPO_SESION_MODIFICADA, mensaje);
     }
 
-    /**
-     * Notifica la cancelación de una sesión a los estudiantes con reserva vigente.
-     * Cancelar las reservas es responsabilidad de quien llama (SesionService), y debe
-     * hacerse DESPUÉS de notificar, mientras las reservas siguen vigentes.
-     *
-     * @return cuántos estudiantes fueron notificados
-     */
     @Override
     public int notificarCancelacion(Sesion sesion) {
         String mensaje = "Tu tutoría de " + sesion.getAsignatura() + " (" + sesion.getTema() + ") "
@@ -82,7 +84,6 @@ public class NotificacionService implements INotificadorSesiones, IBandejaNotifi
         return enviarAReservasActivas(sesion.getId(), Notificacion.TIPO_SESION_CANCELADA, mensaje);
     }
 
-    /** Cuántos estudiantes tienen reserva vigente en la sesión (para avisarle al tutor). */
     @Override
     public int contarEstudiantesConReserva(int sesionId) {
         return reservaDAO.obtenerEstudiantesConReservaActiva(sesionId).size();
@@ -126,7 +127,30 @@ public class NotificacionService implements INotificadorSesiones, IBandejaNotifi
         for (Integer estudianteId : estudiantes) {
             lista.add(new Notificacion(estudianteId, sesionId, tipo, texto));
         }
-        return notificacionDAO.crearVarias(lista) ? lista.size() : 0;
+
+        boolean guardadas = notificacionDAO.crearVarias(lista);
+
+        // Si se guardaron en BD y hay un Adapter configurado, despacha por el canal externo
+        if (guardadas && notificacionAdapter != null) {
+            String asunto = generarAsunto(tipo);
+            for (Integer estudianteId : estudiantes) {
+                try {
+                    notificacionAdapter.enviar("usuario_id:" + estudianteId, asunto, texto);
+                } catch (Exception e) {
+                    System.err.println("Error al enviar notificación externa al usuario "
+                            + estudianteId + ": " + e.getMessage());
+                }
+            }
+        }
+
+        return guardadas ? lista.size() : 0;
+    }
+
+    private String generarAsunto(String tipo) {
+        if (Notificacion.TIPO_SESION_CANCELADA.equals(tipo)) {
+            return "StudyBuddy - Tutoría Cancelada";
+        }
+        return "StudyBuddy - Actualización en tu Tutoría";
     }
 
     private String describirCambios(Sesion antes, Sesion despues) {
@@ -155,7 +179,6 @@ public class NotificacionService implements INotificadorSesiones, IBandejaNotifi
         return String.join("; ", cambios);
     }
 
-    // Se comparan solo hora y minuto para que los segundos sobrantes no cuenten como cambio
     private boolean mismaHora(LocalTime a, LocalTime b) {
         return a.truncatedTo(ChronoUnit.MINUTES).equals(b.truncatedTo(ChronoUnit.MINUTES));
     }

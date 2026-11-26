@@ -17,12 +17,25 @@ import studybuddy.logic.*;
 import studybuddy.logic.strategy.ValidadorAdministrador;
 import studybuddy.logic.strategy.ValidadorEstudiante;
 import studybuddy.logic.strategy.ValidadorTutor;
+import studybuddy.model.Rol;
 
 public final class ServiceFactory {
 
     private ServiceFactory() {}
 
-    // --- Estrategias de Validación (Strategy) ---
+    // --- Fábrica dinámica de Estrategias (Strategy) ---
+    public static IValidadorUsuario crearValidador(Rol rol) {
+        if (rol == null) {
+            return new ValidadorEstudiante();
+        }
+        return switch (rol) {
+            case ESTUDIANTE    -> new ValidadorEstudiante();
+            case TUTOR_MONITOR -> new ValidadorTutor();
+            case ADMINISTRADOR -> new ValidadorAdministrador();
+            default            -> new ValidadorEstudiante();
+        };
+    }
+
     public static IValidadorUsuario crearValidadorEstudiante() {
         return new ValidadorEstudiante();
     }
@@ -37,11 +50,11 @@ public final class ServiceFactory {
 
     // --- Servicios de Negocio ---
     public static IAutenticacionService crearAutenticacionService() {
-        return new AutenticacionService(new UsuarioDAOImpl(), crearValidadorEstudiante());
+        return new AutenticacionService(new UsuarioDAOImpl(), crearValidador(null));
     }
 
     public static IPerfilService crearPerfilService() {
-        return new PerfilService(new UsuarioDAOImpl(), crearValidadorEstudiante());
+        return new PerfilService(new UsuarioDAOImpl(), crearValidador(null));
     }
 
     public static ISesionService crearSesionService() {

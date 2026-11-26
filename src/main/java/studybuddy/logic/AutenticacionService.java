@@ -1,6 +1,7 @@
 package studybuddy.logic;
 
 import studybuddy.dao.UsuarioDAO;
+import studybuddy.factory.ServiceFactory;
 import studybuddy.model.Usuario;
 import java.sql.SQLException;
 
@@ -11,31 +12,23 @@ import java.sql.SQLException;
 public class AutenticacionService implements IAutenticacionService {
 
     private final UsuarioDAO usuarioDAO;
-    private final IValidadorUsuario validador;
+    private final IValidadorUsuario validadorBase;
 
     public AutenticacionService(UsuarioDAO usuarioDAO, IValidadorUsuario validador) {
         this.usuarioDAO = usuarioDAO;
-        this.validador = validador;
+        this.validadorBase = validador;
     }
 
-    /**
-     * Limpia y normaliza la contraseña (en producción aplicar hash).
-     * @param contraseña Contraseña raw
-     * @return Contraseña procesada
-     */
     public String procesarContraseña(String contraseña) {
         if (contraseña == null) return "";
         return contraseña.trim();
     }
 
-    /**
-     * Autentica un usuario verificando correo y contraseña.
-     * @param correo Correo del usuario
-     * @param contraseña Contraseña proporcionada
-     * @return Usuario autenticado o null si falla
-     */
     @Override
     public Usuario autenticar(String correo, String contraseña) {
+        if (correo == null || contraseña == null) {
+            return null;
+        }
         try {
             Usuario usuario = usuarioDAO.obtenerPorCorreo(correo.trim().toLowerCase());
 
@@ -48,39 +41,41 @@ public class AutenticacionService implements IAutenticacionService {
         return null;
     }
 
-    /**
-     * Registra un nuevo usuario tras validar reglas de negocio.
-     * @param usuario Objeto Usuario a registrar
-     * @return Mensaje de resultado o null si éxito
-     * @throws SQLException Si ocurre error en BD
-     */
     @Override
     public String registrarUsuario(Usuario usuario) throws SQLException {
-        // Validar dominio institucional
-        if (!validador.validarDominioInstitucional(usuario.getCorreo())) {
-            return "El correo debe ser institucional (@unimayor.edu.co)";
+        if (usuario == null) {
+            return "Datos de usuario inválidos";
         }
 
-        // Validar campos no vacíos
-        if (!validador.validarCamposNoVacios(
+        // 1. Selecciona la estrategia concreta según el rol del usuario
+        IValidadorUsuario estrategiaRol = (usuario.getRol() != null)
+                ? ServiceFactory.crearValidador(usuario.getRol())
+                : validadorBase;
+
+        // 2. Aplica la estrategia de validación de dominio
+        if (!estrategiaRol.validarDominioInstitucional(usuario.getCorreo())) {
+            return "El correo no pertenece al dominio institucional permitido para este rol";
+        }
+
+        // 3. Aplica la estrategia de validación de campos obligatorios
+        if (!estrategiaRol.validarCamposNoVacios(
                 usuario.getNombreCompleto(),
                 usuario.getCorreo(),
                 usuario.getContraseña(),
                 usuario.getFacultad(),
-                usuario.getProgramaAcademico()
-        )) {
-            return "Todos los campos son obligatorios";
+                usuario.getProgramaAcademico())) {
+            return "Todos los campos obligatorios deben estar completos";
         }
 
-        // Validar que el correo no exista
-        if (usuarioDAO.existeCorreo(usuario.getCorreo().trim().toLowerCase())) {
+        String correoNormalizado = usuario.getCorreo().trim().toLowerCase();
+
+        if (usuarioDAO.existeCorreo(correoNormalizado)) {
             return "El correo ya está registrado";
         }
 
-        // Procesar contraseña y registrar
         usuario.setContraseña(procesarContraseña(usuario.getContraseña()));
-        usuario.setCorreo(usuario.getCorreo().trim().toLowerCase());
+        usuario.setCorreo(correoNormalizado);
         usuarioDAO.registrar(usuario);
-        return null; // null indica éxito
+        return null;
     }
 }
