@@ -11,30 +11,13 @@ package studybuddy.logic.strategy;
 import studybuddy.logic.IValidadorUsuario;
 
 public class ValidadorEstudiante implements IValidadorUsuario {
-
-    private static final String DOMINIO =
-            "@unimayor.edu.co";
-
-    @Override
-    public boolean validarDominioInstitucional(String correo) {
-
-        return correo != null
-                && correo.trim().toLowerCase().endsWith(DOMINIO);
-    }
-
     @Override
     public boolean validarCamposNoVacios(String... campos) {
-
-        if (campos == null) {
-            return false;
-        }
-
+        // Estudiante necesita: nombre, correo, contraseña (3 campos)
+        if (campos == null || campos.length < 3) return false;
         for (String campo : campos) {
-            if (campo == null || campo.trim().isEmpty()) {
-                return false;
-            }
+            if (campo == null || campo.trim().isEmpty()) return false;
         }
-
         return true;
     }
 }

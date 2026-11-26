@@ -22,14 +22,13 @@ public class ControllerFactory {
     // LOGIN
     // ==========================================
 
-    public static LoginController crearLoginController(FrmLogin vista) {
-
-        return new LoginController(
-                vista,
-                ServiceFactory.crearAutenticacionService(),
-                ServiceFactory.crearValidadorUsuario()
-        );
-    }
+   public static LoginController crearLoginController(FrmLogin vista) {
+    return new LoginController(
+        vista,
+        ServiceFactory.crearAutenticacionService(),
+        ServiceFactory.crearValidadorEstudiante()
+    );
+}
 
     // ==========================================
     // REGISTRO

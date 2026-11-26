@@ -22,8 +22,8 @@ public class AppFactory {
         FrmLogin vista = new FrmLogin();
         
         // 2. Crear el Servicio (La lógica de negocio)
-        IAutenticacionService servicio = ServiceFactory.crearAutenticacionService();
-        IValidadorUsuario validador = ServiceFactory.crearValidadorUsuario();
+       IAutenticacionService servicio = ServiceFactory.crearAutenticacionService();
+       IValidadorUsuario validador = ServiceFactory.crearValidadorEstudiante();
         
         // 3. Crear el Controller e INYECTARLE ambas dependencias
         // ¡Aquí es donde se conectan los cables!

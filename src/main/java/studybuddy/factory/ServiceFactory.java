@@ -8,6 +8,7 @@ package studybuddy.factory;
  *
  * @author yoban
  */
+
 import studybuddy.dao.impl.NotificacionDAOImpl;
 import studybuddy.dao.impl.ReservaDAOImpl;
 import studybuddy.dao.impl.SesionDAOImpl;
@@ -16,15 +17,12 @@ import studybuddy.logic.*;
 import studybuddy.logic.strategy.ValidadorAdministrador;
 import studybuddy.logic.strategy.ValidadorEstudiante;
 import studybuddy.logic.strategy.ValidadorTutor;
+
 public final class ServiceFactory {
 
     private ServiceFactory() {}
 
     // --- Estrategias de Validación (Strategy) ---
-    public static IValidadorUsuario crearValidadorUsuario() {
-        return new ValidadorUsuario();
-    }
-
     public static IValidadorUsuario crearValidadorEstudiante() {
         return new ValidadorEstudiante();
     }
@@ -39,11 +37,11 @@ public final class ServiceFactory {
 
     // --- Servicios de Negocio ---
     public static IAutenticacionService crearAutenticacionService() {
-        return new AutenticacionService(new UsuarioDAOImpl(), crearValidadorUsuario());
+        return new AutenticacionService(new UsuarioDAOImpl(), crearValidadorEstudiante());
     }
 
     public static IPerfilService crearPerfilService() {
-        return new PerfilService(new UsuarioDAOImpl(), crearValidadorUsuario());
+        return new PerfilService(new UsuarioDAOImpl(), crearValidadorEstudiante());
     }
 
     public static ISesionService crearSesionService() {
