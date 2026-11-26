@@ -1,6 +1,8 @@
 package studybuddy.gui;
 
+
 import studybuddy.controller.CatalogoTutoriasController;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -12,6 +14,8 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Path2D;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FrmCatalogoTutorias extends JFrame {
 
@@ -26,6 +30,7 @@ public class FrmCatalogoTutorias extends JFrame {
     public DefaultTableModel modeloTabla;
     public JButton btnReservar;
     public JButton btnVolver;
+    public JButton btnReservarGrupal;
 
     // Paleta de colores institucionales Unimayor
     private static final Color AZUL_OSCURO = new Color(0, 51, 102);      // #003366
@@ -35,6 +40,7 @@ public class FrmCatalogoTutorias extends JFrame {
     private static final Color BORDE_TARJETA = new Color(218, 224, 232);
     private static final Color TEXTO_PRINCIPAL = new Color(33, 37, 41);
     private static final Color VERDE_ACCION = new Color(34, 153, 84);
+    private static final Color NARANJA_GRUPAL = new Color(214, 138, 22);
     private static final Color GRIS_NEUTRO = new Color(233, 236, 239);
 
     public FrmCatalogoTutorias() {
@@ -73,7 +79,7 @@ public class FrmCatalogoTutorias extends JFrame {
         lblTitulo.setIcon(crearIconoVectorial("birrete", 24, Color.WHITE));
         lblTitulo.setIconTextGap(12);
 
-        JLabel lblSubtitulo = new JLabel("Filtra por asignatura, sede o modalidad y reserva tu cupo fácilmente");
+        JLabel lblSubtitulo = new JLabel("Filtra por asignatura, sede o modalidad y reserva tu cupo individual o grupal");
         lblSubtitulo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         lblSubtitulo.setForeground(new Color(205, 222, 242));
         lblSubtitulo.setBorder(new EmptyBorder(4, 36, 0, 0));
@@ -168,7 +174,6 @@ public class FrmCatalogoTutorias extends JFrame {
         tblResultados.setIntercellSpacing(new Dimension(0, 1));
         tblResultados.setFillsViewportHeight(true);
 
-        // Estilo del encabezado de tabla (Títulos en negrilla y fondo azul oscuro)
         JTableHeader header = tblResultados.getTableHeader();
         header.setFont(new Font("Segoe UI", Font.BOLD, 13));
         header.setBackground(AZUL_OSCURO);
@@ -181,7 +186,6 @@ public class FrmCatalogoTutorias extends JFrame {
         headerRenderer.setBackground(AZUL_OSCURO);
         headerRenderer.setForeground(Color.WHITE);
 
-        // Renderizador personalizado de celdas (filas alternadas + alineación + badge en cupos)
         tblResultados.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
@@ -197,13 +201,12 @@ public class FrmCatalogoTutorias extends JFrame {
                     celda.setForeground(TEXTO_PRINCIPAL);
                 }
 
-                // Alineación y énfasis según la columna
                 if (column == 0 || column == 4 || column == 5 || column == 6) {
                     celda.setHorizontalAlignment(SwingConstants.CENTER);
                     celda.setFont(new Font("Segoe UI", Font.PLAIN, 13));
                 } else if (column == 1) {
                     celda.setHorizontalAlignment(SwingConstants.LEFT);
-                    celda.setFont(new Font("Segoe UI", Font.BOLD, 13)); // Asignatura en negrilla
+                    celda.setFont(new Font("Segoe UI", Font.BOLD, 13));
                 } else if (column == 8) {
                     celda.setHorizontalAlignment(SwingConstants.CENTER);
                     celda.setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -253,14 +256,201 @@ public class FrmCatalogoTutorias extends JFrame {
         btnVolver = crearBoton("Volver al Menú", GRIS_NEUTRO, TEXTO_PRINCIPAL, crearIconoVectorial("volver", 14, TEXTO_PRINCIPAL));
         btnVolver.setPreferredSize(new Dimension(155, 38));
 
+        btnReservarGrupal = crearBoton("Reserva Grupal", NARANJA_GRUPAL, Color.WHITE,
+                crearIconoVectorial("grupo", 14, Color.WHITE));
+        btnReservarGrupal.setPreferredSize(new Dimension(165, 38));
+
         btnReservar = crearBoton("Reservar Cupo", VERDE_ACCION, Color.WHITE, crearIconoVectorial("check", 14, Color.WHITE));
         btnReservar.setPreferredSize(new Dimension(165, 38));
 
         panelBotones.add(btnVolver);
+        panelBotones.add(btnReservarGrupal);
         panelBotones.add(btnReservar);
         panelPrincipal.add(panelBotones, BorderLayout.SOUTH);
 
         add(panelPrincipal);
+    }
+
+    /**
+     * Despliega un diálogo modal estilizado para armar el grupo de estudiantes.
+     *
+     * @return Lista de IDs de estudiantes confirmados, o null si el usuario canceló.
+     */
+    public List<Integer> mostrarDialogoReservaGrupal(String asignatura, String fechaHora,
+                                                     int cuposDisponibles, int idEstudianteActual,
+                                                     String nombreEstudianteActual) {
+        final List<Integer> resultado = new ArrayList<>();
+        final boolean[] confirmado = {false};
+
+        JDialog dialogo = new JDialog(this, "Reserva Grupal de Tutoría", true);
+        dialogo.setSize(490, 460);
+        dialogo.setResizable(false);
+        dialogo.setLocationRelativeTo(this);
+
+        JPanel root = new JPanel(new BorderLayout(0, 12));
+        root.setBackground(FONDO_GENERAL);
+        root.setBorder(new EmptyBorder(14, 16, 14, 16));
+
+        // 1. Header Institucional
+        JPanel header = new JPanel(new BorderLayout(10, 4));
+        header.setBackground(AZUL_OSCURO);
+        header.setBorder(new EmptyBorder(14, 18, 14, 18));
+
+        JLabel lblTitulo = new JLabel("Reserva Grupal: " + asignatura);
+        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblTitulo.setForeground(Color.WHITE);
+        lblTitulo.setIcon(crearIconoVectorial("grupo", 20, Color.WHITE));
+        lblTitulo.setIconTextGap(10);
+
+        JLabel lblDetalle = new JLabel("Horario: " + fechaHora + "  •  Cupos libres: " + cuposDisponibles);
+        lblDetalle.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblDetalle.setForeground(new Color(205, 222, 242));
+
+        header.add(lblTitulo, BorderLayout.NORTH);
+        header.add(lblDetalle, BorderLayout.SOUTH);
+        root.add(header, BorderLayout.NORTH);
+
+        // 2. Tarjeta Central
+        JPanel card = new JPanel(new BorderLayout(0, 10));
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(BORDE_TARJETA, 1, true),
+                new EmptyBorder(14, 16, 14, 16)
+        ));
+
+        JPanel panelAgregar = new JPanel(new BorderLayout(8, 0));
+        panelAgregar.setOpaque(false);
+
+        JTextField txtNuevoId = new JTextField();
+        txtNuevoId.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        txtNuevoId.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(BORDE_TARJETA, 1, true),
+                new EmptyBorder(6, 10, 6, 10)
+        ));
+        txtNuevoId.setToolTipText("Ingresa el ID numérico del compañero");
+
+        JButton btnAgregar = crearBoton("Añadir ID", AZUL_PRIMARIO, Color.WHITE, null);
+        btnAgregar.setPreferredSize(new Dimension(105, 34));
+
+        JLabel lblInstruccion = new JLabel("Ingresa el ID de cada compañero y presiona Añadir:");
+        lblInstruccion.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblInstruccion.setForeground(AZUL_OSCURO);
+        lblInstruccion.setBorder(new EmptyBorder(0, 0, 6, 0));
+
+        panelAgregar.add(lblInstruccion, BorderLayout.NORTH);
+        panelAgregar.add(txtNuevoId, BorderLayout.CENTER);
+        panelAgregar.add(btnAgregar, BorderLayout.EAST);
+        card.add(panelAgregar, BorderLayout.NORTH);
+
+        // Tabla de integrantes del grupo
+        DefaultTableModel modeloGrupo = new DefaultTableModel(new String[]{"ID Estudiante", "Rol en el grupo"}, 0) {
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
+        };
+        modeloGrupo.addRow(new Object[]{idEstudianteActual, nombreEstudianteActual + " (Tú - Organizador)"});
+        resultado.add(idEstudianteActual);
+
+        JTable tblGrupo = new JTable(modeloGrupo);
+        tblGrupo.setRowHeight(30);
+        tblGrupo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        tblGrupo.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tblGrupo.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
+        tblGrupo.getTableHeader().setBackground(new Color(240, 244, 248));
+        tblGrupo.getTableHeader().setForeground(AZUL_OSCURO);
+
+        JScrollPane scrollGrupo = new JScrollPane(tblGrupo);
+        scrollGrupo.setBorder(new LineBorder(BORDE_TARJETA, 1));
+        card.add(scrollGrupo, BorderLayout.CENTER);
+
+        // Barra de estado del grupo
+        JPanel panelEstado = new JPanel(new BorderLayout());
+        panelEstado.setOpaque(false);
+
+        JLabel lblContador = new JLabel("Integrantes seleccionados: 1 de " + cuposDisponibles + " cupos");
+        lblContador.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblContador.setForeground(VERDE_ACCION);
+
+        JButton btnQuitar = crearBoton("Quitar seleccionado", GRIS_NEUTRO, TEXTO_PRINCIPAL, null);
+        btnQuitar.setPreferredSize(new Dimension(150, 28));
+        btnQuitar.setFont(new Font("Segoe UI", Font.BOLD, 11));
+
+        panelEstado.add(lblContador, BorderLayout.WEST);
+        panelEstado.add(btnQuitar, BorderLayout.EAST);
+        card.add(panelEstado, BorderLayout.SOUTH);
+
+        root.add(card, BorderLayout.CENTER);
+
+        // 3. Botones inferiores
+        JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 6));
+        footer.setBackground(Color.WHITE);
+        footer.setBorder(new LineBorder(BORDE_TARJETA, 1, true));
+
+        JButton btnCancelar = crearBoton("Cancelar", GRIS_NEUTRO, TEXTO_PRINCIPAL, null);
+        btnCancelar.setPreferredSize(new Dimension(115, 36));
+
+        JButton btnConfirmar = crearBoton("Confirmar Reserva", VERDE_ACCION, Color.WHITE, crearIconoVectorial("check", 14, Color.WHITE));
+        btnConfirmar.setPreferredSize(new Dimension(175, 36));
+
+        footer.add(btnCancelar);
+        footer.add(btnConfirmar);
+        root.add(footer, BorderLayout.SOUTH);
+
+        // Lógica de interacción del diálogo
+        Runnable accionAgregar = () -> {
+            String raw = txtNuevoId.getText().trim();
+            if (raw.isEmpty()) return;
+            try {
+                int nuevoId = Integer.parseInt(raw);
+                if (nuevoId <= 0) {
+                    JOptionPane.showMessageDialog(dialogo, "El ID debe ser un número positivo.", "ID inválido", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                if (resultado.contains(nuevoId)) {
+                    JOptionPane.showMessageDialog(dialogo, "Ese estudiante ya está en la lista.", "Duplicado", JOptionPane.INFORMATION_MESSAGE);
+                    txtNuevoId.setText("");
+                    return;
+                }
+                if (resultado.size() >= cuposDisponibles) {
+                    JOptionPane.showMessageDialog(dialogo, "Ya alcanzaste el límite de " + cuposDisponibles + " cupos disponibles.", "Sin más cupos", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                resultado.add(nuevoId);
+                modeloGrupo.addRow(new Object[]{nuevoId, "Integrante invitado"});
+                lblContador.setText("Integrantes seleccionados: " + resultado.size() + " de " + cuposDisponibles + " cupos");
+                txtNuevoId.setText("");
+                txtNuevoId.requestFocus();
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(dialogo, "Ingresa solo el número de ID del estudiante.", "Formato inválido", JOptionPane.ERROR_MESSAGE);
+            }
+        };
+
+        btnAgregar.addActionListener(e -> accionAgregar.run());
+        txtNuevoId.addActionListener(e -> accionAgregar.run());
+
+        btnQuitar.addActionListener(e -> {
+            int fila = tblGrupo.getSelectedRow();
+            if (fila == -1) return;
+            if (fila == 0) {
+                JOptionPane.showMessageDialog(dialogo, "No puedes quitarte a ti mismo como organizador.", "Aviso", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            resultado.remove(fila);
+            modeloGrupo.removeRow(fila);
+            lblContador.setText("Integrantes seleccionados: " + resultado.size() + " de " + cuposDisponibles + " cupos");
+        });
+
+        btnCancelar.addActionListener(e -> dialogo.dispose());
+        btnConfirmar.addActionListener(e -> {
+            confirmado[0] = true;
+            dialogo.dispose();
+        });
+
+        dialogo.setContentPane(root);
+        dialogo.setVisible(true);
+
+        return confirmado[0] ? resultado : null;
     }
 
     private void configurarAnchosColumnas() {
@@ -302,7 +492,6 @@ public class FrmCatalogoTutorias extends JFrame {
         btn.setBorderPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Efecto hover sutil
         btn.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -350,7 +539,6 @@ public class FrmCatalogoTutorias extends JFrame {
                         break;
                     }
                     case "limpiar": {
-                        // Ícono de reinicio / limpiar filtro (flecha circular)
                         g2.drawArc(2, 2, size - 4, size - 4, 45, 270);
                         g2.drawLine(size - 3, 2, size - 3, 6);
                         g2.drawLine(size - 3, 6, size - 7, 6);
@@ -366,6 +554,12 @@ public class FrmCatalogoTutorias extends JFrame {
                         g2.drawLine(3, mid, size - 3, mid);
                         g2.drawLine(3, mid, mid, 3);
                         g2.drawLine(3, mid, mid, size - 3);
+                        break;
+                    }
+                    case "grupo": {
+                        g2.drawOval(2, 2, size / 2, size / 2);
+                        g2.drawOval(size / 2, 2, size / 2, size / 2);
+                        g2.drawArc(2, size / 2, size - 4, size / 2, 0, 180);
                         break;
                     }
                 }
@@ -385,9 +579,16 @@ public class FrmCatalogoTutorias extends JFrame {
     }
 
     public void setController(CatalogoTutoriasController controller) {
+        // Evita duplicar listeners si ya fueron registrados en el constructor del controlador
+        for (var l : this.btnBuscar.getActionListeners()) {
+            if (l == controller) return;
+        }
         this.btnBuscar.addActionListener(controller);
         this.btnLimpiar.addActionListener(controller);
         this.btnReservar.addActionListener(controller);
         this.btnVolver.addActionListener(controller);
+        if (this.btnReservarGrupal != null) {
+            this.btnReservarGrupal.addActionListener(controller);
+        }
     }
 }

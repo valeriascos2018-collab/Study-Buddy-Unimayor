@@ -8,9 +8,11 @@ package studybuddy.logic;
  *
  * @author yoban
  */
+import java.util.List;
 public interface IReservaService {
 
     /** @return mensaje de error o null si la reserva se hizo correctamente */
     String reservarCupo(int estudianteId, int sesionId);
-}
+    String reservarCupoGrupal(List<Integer> estudianteIds, int sesionId);
+}  
 

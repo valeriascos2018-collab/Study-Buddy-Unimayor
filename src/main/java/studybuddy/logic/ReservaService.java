@@ -8,6 +8,9 @@ import studybuddy.dao.ReservaDAO;
 import studybuddy.dao.SesionDAO;
 import studybuddy.model.Reserva;
 import studybuddy.model.Sesion;
+import java.util.stream.Collectors;
+import java.util.HashSet;
+import java.util.List;
 
 public class ReservaService implements IReservaService {
 
@@ -40,5 +43,37 @@ public class ReservaService implements IReservaService {
         reserva.setEstado("CONFIRMADA");
         if (reservaDAO.crearReserva(reserva)) return null;
         return "No se pudo completar la reserva. Verifica los cupos, el horario y que no exista otra reserva.";
+    }
+    @Override
+    public String reservarCupoGrupal(List<Integer> estudianteIds, int sesionId) {
+    if (estudianteIds == null || estudianteIds.isEmpty())
+        return "La lista de estudiantes no puede estar vacía.";
+    if (sesionId <= 0) return "La sesión debe ser válida.";
+    
+    // Validar que no haya IDs duplicados
+    if (estudianteIds.size() != new HashSet<>(estudianteIds).size())
+        return "Hay estudiantes duplicados en la lista.";
+    
+    Sesion sesion = sesionDAO.obtenerSesionPorId(sesionId);
+    if (sesion == null) return "La sesión no existe.";
+    if (!sesion.estaProgramada()) return "La sesión no está disponible para reservas.";
+    if (sesion.getFecha() == null || sesion.getFecha().isBefore(java.time.LocalDate.now()))
+        return "No se puede reservar una sesión cuya fecha ya pasó.";
+    if (sesion.getCuposDisponibles() < estudianteIds.size())
+        return "No hay suficientes cupos disponibles para " + estudianteIds.size() + " estudiantes.";
+    
+    // Crear objetos Reserva
+    List<Reserva> reservas = estudianteIds.stream()
+        .map(id -> {
+            Reserva r = new Reserva();
+            r.setEstudianteId(id);
+            r.setSesionId(sesionId);
+            r.setEstado("CONFIRMADA");
+            return r;
+        })
+        .collect(Collectors.toList());
+    
+    if (reservaDAO.crearReservas(reservas)) return null;
+    return "No se pudo completar la reserva grupal. Verifica los cupos y horarios.";
     }
 }

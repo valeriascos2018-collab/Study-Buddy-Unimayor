@@ -21,5 +21,6 @@ public interface ReservaDAO {
     int cancelarReservasDeSesion(int sesionId);
     Reserva obtenerPorId(int idReserva);
     void actualizar(Reserva reserva); // Para guardar el estado de asistencia
+    boolean crearReservas(List<Reserva> reservas);
     
 }
