@@ -12,39 +12,32 @@ import studybuddy.dao.impl.NotificacionDAOImpl;
 import studybuddy.dao.impl.ReservaDAOImpl;
 import studybuddy.dao.impl.SesionDAOImpl;
 import studybuddy.dao.impl.UsuarioDAOImpl;
-import studybuddy.logic.AutenticacionService;
-import studybuddy.logic.IAutenticacionService;
-import studybuddy.logic.IBandejaNotificaciones;
-import studybuddy.logic.IPerfilService;
-import studybuddy.logic.IReservaService;
-import studybuddy.logic.ISesionService;
-import studybuddy.logic.IValidadorUsuario;
-import studybuddy.logic.NotificacionService;
-import studybuddy.logic.PerfilService;
-import studybuddy.logic.ReservaService;
-import studybuddy.logic.SesionService;
-import studybuddy.logic.ValidadorUsuario;
-import studybuddy.logic.IReporteService;
-import studybuddy.logic.ReporteService;
-import studybuddy.logic.TutoriasFacade;
-import studybuddy.logic.IValidadorUsuario;
+import studybuddy.logic.*;
+import studybuddy.logic.strategy.ValidadorAdministrador;
 import studybuddy.logic.strategy.ValidadorEstudiante;
 import studybuddy.logic.strategy.ValidadorTutor;
-import studybuddy.logic.strategy.ValidadorAdministrador;
-/**
- * Raíz de composición de la capa lógica: es el ÚNICO lugar que conoce las clases
- * concretas (DAOImpl y servicios) y las conecta entre sí. Todo lo demás depende de interfaces.
- * Para cambiar de MySQL a otra fuente de datos, o para probar con DAOs falsos,
- * solo se toca esta clase.
- */
 public final class ServiceFactory {
 
     private ServiceFactory() {}
 
+    // --- Estrategias de Validación (Strategy) ---
     public static IValidadorUsuario crearValidadorUsuario() {
         return new ValidadorUsuario();
     }
 
+    public static IValidadorUsuario crearValidadorEstudiante() {
+        return new ValidadorEstudiante();
+    }
+
+    public static IValidadorUsuario crearValidadorTutor() {
+        return new ValidadorTutor();
+    }
+
+    public static IValidadorUsuario crearValidadorAdministrador() {
+        return new ValidadorAdministrador();
+    }
+
+    // --- Servicios de Negocio ---
     public static IAutenticacionService crearAutenticacionService() {
         return new AutenticacionService(new UsuarioDAOImpl(), crearValidadorUsuario());
     }
@@ -68,21 +61,12 @@ public final class ServiceFactory {
     private static NotificacionService crearNotificacionService() {
         return new NotificacionService(new NotificacionDAOImpl(), new ReservaDAOImpl());
     }
+
     public static IReporteService crearReporteService() {
-    return new ReporteService(new SesionDAOImpl());
+        return new ReporteService(new SesionDAOImpl());
     }
+
     public static TutoriasFacade crearTutoriasFacade() {
         return new TutoriasFacade(crearSesionService());
-    }
-    public static IValidadorUsuario crearValidadorEstudiante() {
-        return new ValidadorEstudiante();
-    }
-
-    public static IValidadorUsuario crearValidadorTutor() {
-        return new ValidadorTutor();
-    }
-
-    public static IValidadorUsuario crearValidadorAdministrador() {
-        return new ValidadorAdministrador();
     }
 }
